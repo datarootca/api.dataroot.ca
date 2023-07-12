@@ -44,7 +44,7 @@ const QUERY_FIND_STATE_BY_ID: &str = "
     from
         state
     where 
-        state = $1;";
+        stateid = $1;";
 
 const QUERY_INSERT_STATE: &str = "
     insert into state(stateid,name,symbol,extid,highres_link,photo_link,thumb_link)

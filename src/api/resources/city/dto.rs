@@ -4,8 +4,11 @@ use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 use validator::Validate;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 use crate::{
-    api::utils::validator::validate_page_size_max,
+    api::utils::{validator::validate_page_size_max},
     domain::city::model::{CityCreateModel, CityModel, CityUpdateModel},
 };
 
@@ -43,9 +46,9 @@ impl From<RequestCreateCity> for CityCreateModel {
 impl RequestCreateCity {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            slug: "ca".to_string(),
-            extid: "ca".to_string(),
+            name: random_string(10),
+            slug: random_string(10),
+            extid: random_string(10),
             stateid: uuid::Uuid::new_v4(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
@@ -85,8 +88,8 @@ impl From<RequestUpdateCity> for CityUpdateModel {
 impl RequestUpdateCity {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            slug: "ca".to_string(),
+            name: random_string(20),
+            slug: random_string(2),
             stateid: uuid::Uuid::new_v4(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),

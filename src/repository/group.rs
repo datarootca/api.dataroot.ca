@@ -61,7 +61,7 @@ const QUERY_FIND_GROUP_BY_ID: &str = "
 const QUERY_INSERT_GROUP: &str = "
     insert into \"group\"(groupid,name,description,extid,slug,private,members,cityid,organizer,highres_link,photo_link,thumb_link,active)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
     returning
         groupid,
         name,
@@ -76,7 +76,7 @@ const QUERY_INSERT_GROUP: &str = "
         updated_at,
         highres_link,
         photo_link,
-        thumb_link
+        thumb_link, 
         active;";
 
 const QUERY_UPDATE_GROUP_BY_ID: &str = "
@@ -86,15 +86,14 @@ const QUERY_UPDATE_GROUP_BY_ID: &str = "
         name=$2,
         description=$3,
         slug=$4,
-        publish_at=$5,
-        private=$6,
-        members=$7,
-        cityid=$8,
-        organizer=$9,
-        highres_link=$10,
-        photo_link=$11,
-        thumb_link=$12,
-        active=$13,
+        private=$5,
+        members=$6,
+        cityid=$7,
+        organizer=$8,
+        highres_link=$9,
+        photo_link=$10,
+        thumb_link=$11,
+        active=$12,
         updated_at=now()
     where
         groupid = $1
@@ -112,7 +111,8 @@ const QUERY_UPDATE_GROUP_BY_ID: &str = "
         updated_at,
         highres_link,
         photo_link,
-        thumb_link;";
+        thumb_link, 
+        active;";
 
 const QUERY_DELETE_GROUP_BY_ID: &str = "
     delete from
@@ -144,7 +144,7 @@ impl GroupRepository for PgGroupRepository {
 
         if let Some(name) = name {
             queries.push(format!(
-                "group.name like '%' || ${} || '%'",
+                "\"group\".name like '%' || ${} || '%'",
                 params.len() + 1
             ));
             params.push(name);
@@ -209,7 +209,6 @@ impl GroupRepository for PgGroupRepository {
                 ],
             )
             .await?;
-
         Ok(result.into())
     }
 

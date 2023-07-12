@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 #[derive(Debug, Clone)]
 pub struct ArticleCreateModel {
     pub articleid: Uuid,
@@ -52,9 +55,9 @@ impl ArticleCreateModel {
     pub fn mock_default() -> Self {
         Self {
             articleid: uuid::Uuid::new_v4(),
-            extid: "1".to_string(),
+            extid: random_string(10),
             name: "article".to_string(),
-            link: "article".to_string(),
+            link: random_string(10),
             description: Some("The famous article".to_string()),
             time_m: 5,
             source: "source".to_string(),
@@ -115,7 +118,7 @@ impl ArticleUpdateModel {
             description: Some("The famous article".to_string()),
             time_m: 5,
             source: "source".to_string(),
-            link: "link".to_string(),
+            link: random_string(10),
             author: "author".to_string(),
             publish_at: DateTime::default(),
             highres_link: Some("The img".to_string()),
@@ -147,10 +150,10 @@ impl ArticleModel {
     pub fn mock_default() -> Self {
         Self {
             articleid: uuid::Uuid::new_v4(),
-            extid: "1".to_string(),
+            extid: random_string(10),
             name: "article".to_string(),
             description: Some("The famous article".to_string()),
-            link: "hyperlink".to_string(),
+            link: random_string(10),
             time_m: 5,
             source: "source".to_string(),
             author: "author".to_string(),

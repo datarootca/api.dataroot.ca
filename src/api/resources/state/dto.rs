@@ -80,8 +80,8 @@ impl From<RequestUpdateState> for StateUpdateModel {
 impl RequestUpdateState {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            symbol: "ca".to_string(),
+            name: "Czech republic".to_string(),
+            symbol: "cs".to_string(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),

@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 #[derive(Debug, Clone)]
 pub struct StateCreateModel {
     pub stateid: Uuid,
@@ -37,9 +40,9 @@ impl StateCreateModel {
     pub fn mock_default() -> Self {
         Self {
             stateid: uuid::Uuid::new_v4(),
-            name: "California".to_string(),
-            symbol: "ca".to_string(),
-            extid: "ca".to_string(),
+            name: random_string(10),
+            symbol: random_string(2),
+            extid: random_string(10),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -76,8 +79,8 @@ impl StateUpdateModel {
 impl StateUpdateModel {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            symbol: "ca".to_string(),
+            name: "Slovakia ".to_string(),
+            symbol: "cs".to_string(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -102,9 +105,9 @@ impl StateModel {
     pub fn mock_default() -> Self {
         Self {
             stateid: uuid::Uuid::new_v4(),
-            name: "California".to_string(),
-            symbol: "ca".to_string(),
-            extid: "ca".to_string(),
+            name: random_string(10),
+            symbol: random_string(2),
+            extid: random_string(10),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),

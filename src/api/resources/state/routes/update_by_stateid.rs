@@ -77,7 +77,7 @@ mod tests {
             .unwrap();
 
         let mock_request_update_state =
-            dto::RequestUpdateState::mock_default().with_name("Burgers Supreme");
+            dto::RequestUpdateState::mock_default().with_name("Slovakia");
         let req = test::TestRequest::put()
             .uri(&format!("/state/{}", state_model.stateid))
             .set_json(mock_request_update_state.clone())

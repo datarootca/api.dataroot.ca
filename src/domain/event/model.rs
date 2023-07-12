@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 #[derive(Debug, Clone)]
 pub struct EventCreateModel {
     pub eventid: Uuid,
@@ -70,16 +73,16 @@ impl EventCreateModel {
     pub fn mock_default() -> Self {
         Self {
             eventid: uuid::Uuid::new_v4(),
-            name: "Event".to_string(),
+            name: "event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
             groupid: uuid::Uuid::new_v4(),
-            extid: "m-event".to_string(),
+            extid: random_string(10),
             in_person: true,
             is_online: true,
             time: DateTime::default(),
             duration: 5,
-            link: "".to_string(),
+            link: random_string(10),
             waitlist_count: 5,
             fee: false,
             yes_rsvp_count: 5,
@@ -161,7 +164,7 @@ impl EventUpdateModel {
             is_online: true,
             time: DateTime::default(),
             duration: 5,
-            link: "".to_string(),
+            link: random_string(10),
             waitlist_count: 5,
             fee: false,
             yes_rsvp_count: 5,
@@ -205,12 +208,12 @@ impl EventModel {
             name: "Event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
-            extid: "m-event".to_string(),
+            extid: random_string(10),
             in_person: true,
             is_online: true,
             time: DateTime::default(),
             duration: 5,
-            link: "".to_string(),
+            link: random_string(10),
             waitlist_count: 5,
             fee: false,
             yes_rsvp_count: 5,

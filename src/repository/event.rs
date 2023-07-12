@@ -59,18 +59,19 @@ const QUERY_FIND_EVENT_BY_ID: &str = "
         e.created_at,
         e.updated_at,
         e.highres_link,
+        e.rsvp_limit,
         e.photo_link,
         e.thumb_link,
         count(1) over ()::OID as count
     from
         event e
     where 
-        event = $1;";
+        eventid = $1;";
 
 const QUERY_INSERT_EVENT: &str = "
     insert into event(eventid,name,description,extid,location,groupid,in_person,time,duration,link,waitlist_count,is_online,yes_rsvp_count,fee,highres_link,photo_link,thumb_link,rsvp_limit)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,!6,$17)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
     returning
         eventid,
         name,
@@ -112,7 +113,7 @@ const QUERY_UPDATE_EVENT_BY_ID: &str = "
         highres_link=$14,
         photo_link=$15,
         thumb_link=$16,
-        rsvp_limit=$17
+        rsvp_limit=$17,
         updated_at=now()
     where
         eventid = $1
@@ -168,7 +169,7 @@ impl EventRepository for PgEventRepository {
 
         if let Some(name) = name {
             queries.push(format!(
-                "event.name like '%' || ${} || '%'",
+                "e.name like '%' || ${} || '%'",
                 params.len() + 1
             ));
             params.push(name);

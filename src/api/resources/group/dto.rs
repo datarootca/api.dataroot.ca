@@ -4,9 +4,12 @@ use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 use validator::Validate;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 use crate::{
-    api::utils::validator::validate_page_size_max,
-    domain::group::model::{GroupCreateModel, GroupModel, GroupUpdateModel},
+    api::utils::{validator::validate_page_size_max},
+    domain::group::model::{GroupCreateModel, GroupModel, GroupUpdateModel, ImageLinks},
 };
 
 #[cfg_attr(test, derive(Serialize))]
@@ -45,9 +48,11 @@ impl From<RequestCreateGroup> for GroupCreateModel {
             value.members,
             value.cityid,
             value.organizer,
-            value.highres_link,
-            value.photo_link,
-            value.thumb_link,
+            ImageLinks{
+                highres_link:   value.highres_link,
+                photo_link: value.photo_link,
+                thumb_link:  value.thumb_link
+            },
         )
     }
 }
@@ -55,10 +60,10 @@ impl From<RequestCreateGroup> for GroupCreateModel {
 impl RequestCreateGroup {
     pub fn mock_default() -> Self {
         Self {
-            name: "Group".to_string(),
+            name: random_string(10),
             description: "The Big Group".to_string(),
-            extid: "group".to_string(),
-            slug: "the-big-group".to_string(),
+            extid: random_string(10),
+            slug: random_string(10),
             organizer: "organizer".to_string(),
             active: true,
             private: true,
@@ -104,9 +109,11 @@ impl From<RequestUpdateGroup> for GroupUpdateModel {
             value.members,
             value.cityid,
             value.organizer,
-            value.highres_link,
-            value.photo_link,
-            value.thumb_link,
+            ImageLinks{
+                highres_link:   value.highres_link,
+                photo_link: value.photo_link,
+                thumb_link:  value.thumb_link
+            },
         )
     }
 }
@@ -114,9 +121,9 @@ impl From<RequestUpdateGroup> for GroupUpdateModel {
 impl RequestUpdateGroup {
     pub fn mock_default() -> Self {
         Self {
-            name: "Group".to_string(),
+            name: random_string(10),
             description: "The Big Group".to_string(),
-            slug: "the-big-group".to_string(),
+            slug: random_string(10),
             organizer: "organizer".to_string(),
             active: true,
             private: true,

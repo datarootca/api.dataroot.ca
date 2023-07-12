@@ -54,12 +54,12 @@ const QUERY_FIND_ARTICLE_BY_ID: &str = "
     from
         article
     where 
-        article = $1;";
+        articleid = $1;";
 
 const QUERY_INSERT_ARTICLE: &str = "
-    insert into article(articleid,extid,name,description,time_m,source,link,author,highres_link,photo_link,thumb_link)
+    insert into article(articleid,extid,name,description,time_m,source,link,author,highres_link,photo_link,thumb_link,publish_at)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
     returning
         articleid,
         extid,
@@ -199,6 +199,7 @@ impl ArticleRepository for PgArticleRepository {
                     &article_create_model.highres_link,
                     &article_create_model.photo_link,
                     &article_create_model.thumb_link,
+                    &article_create_model.publish_at,
                 ],
             )
             .await?;

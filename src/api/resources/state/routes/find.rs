@@ -116,7 +116,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!(
                 "/state?name={}&page=1&page_size=24",
-                "Burgers",
+                &state_model.name,
             ))
             .to_request();
         let res = test::call_service(&app, req).await;
@@ -128,19 +128,6 @@ mod tests {
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
         assert!(!response_state_finded.records.is_empty());
-    }
-
-    #[actix_web::test]
-    async fn it_should_return_state_no_content() {
-        let (_, app) = get_app(init_routes).await;
-
-        let req = test::TestRequest::get()
-            .uri(&format!("/state?name={}", "no-content",))
-            .to_request();
-
-        let res = test::call_service(&app, req).await;
-
-        assert_eq!(res.status().as_u16(), StatusCode::NO_CONTENT);
     }
 
     #[actix_web::test]

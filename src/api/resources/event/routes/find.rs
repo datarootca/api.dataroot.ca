@@ -102,21 +102,21 @@ mod tests {
         assert!(!response_event_finded.records.is_empty());
     }
     #[actix_web::test]
-    async fn it_should_return_state_finded_by_query() {
+    async fn it_should_return_event_finded_by_query() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
-        let state_model = EventCreateModel::mock_default();
+        let event_model = EventCreateModel::mock_default();
         repositories
             .event_repository
-            .insert(&state_model.clone())
+            .insert(&event_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
             .uri(&format!(
                 "/event?name={}&page=1&page_size=24",
-                "Burgers",
+                &event_model.name,
             ))
             .to_request();
         let res = test::call_service(&app, req).await;

@@ -102,21 +102,21 @@ mod tests {
         assert!(!response_city_finded.records.is_empty());
     }
     #[actix_web::test]
-    async fn it_should_return_state_finded_by_query() {
+    async fn it_should_return_city_finded_by_query() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
-        let state_model = CityCreateModel::mock_default();
+        let city_model = CityCreateModel::mock_default();
         repositories
             .city_repository
-            .insert(&state_model.clone())
+            .insert(&city_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
             .uri(&format!(
                 "/city?name={}&page=1&page_size=24",
-                "Burgers",
+                city_model.name,
             ))
             .to_request();
         let res = test::call_service(&app, req).await;

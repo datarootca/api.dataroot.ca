@@ -1963,6 +1963,7 @@ dependencies = [
  "log",
  "mockall",
  "pem",
+ "rand",
  "redis",
  "refinery",
  "rustls",

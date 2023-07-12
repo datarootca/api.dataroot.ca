@@ -102,7 +102,7 @@ mod tests {
         assert!(!response_article_finded.records.is_empty());
     }
     #[actix_web::test]
-    async fn it_should_return_state_finded_by_query() {
+    async fn it_should_return_article_finded_by_query() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
@@ -116,7 +116,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!(
                 "/article?name={}&page=1&page_size=24",
-                "Burgers",
+                &state_model.name,
             ))
             .to_request();
         let res = test::call_service(&app, req).await;

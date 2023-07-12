@@ -102,21 +102,21 @@ mod tests {
         assert!(!response_group_finded.records.is_empty());
     }
     #[actix_web::test]
-    async fn it_should_return_state_finded_by_query() {
+    async fn it_should_return_group_finded_by_query() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
-        let state_model = GroupCreateModel::mock_default();
+        let group_model = GroupCreateModel::mock_default();
         repositories
             .group_repository
-            .insert(&state_model.clone())
+            .insert(&group_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
             .uri(&format!(
                 "/group?name={}&page=1&page_size=24",
-                "Burgers",
+                &group_model.name,
             ))
             .to_request();
         let res = test::call_service(&app, req).await;

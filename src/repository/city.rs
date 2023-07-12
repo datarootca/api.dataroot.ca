@@ -44,12 +44,12 @@ const QUERY_FIND_CITY_BY_ID: &str = "
         updated_at,
         count(1) over ()::OID as count
     from
-        state
+        city
     where 
-        state = $1;";
+        cityid = $1;";
 
 const QUERY_INSERT_CITY: &str = "
-    insert into state(cityid,stateid,name,slug,extid,highres_link,photo_link,thumb_link)
+    insert into city(cityid,stateid,name,slug,extid,highres_link,photo_link,thumb_link)
     values
         ($1,$2,$3,$4,$5,$6,$7,$8)
     returning
@@ -62,7 +62,7 @@ const QUERY_INSERT_CITY: &str = "
         photo_link,
         thumb_link,
         created_at,
-        updated_at,";
+        updated_at;";
 
 const QUERY_UPDATE_CITY_BY_ID: &str = "
     update
@@ -87,11 +87,11 @@ const QUERY_UPDATE_CITY_BY_ID: &str = "
         photo_link,
         thumb_link,
         created_at,
-        updated_at,";
+        updated_at;";
 
 const QUERY_DELETE_CITY_BY_ID: &str = "
             delete from
-                state 
+                city 
             where
                 cityid = $1;";
 

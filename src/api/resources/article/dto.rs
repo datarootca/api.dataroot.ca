@@ -5,9 +5,12 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
-    api::utils::validator::validate_page_size_max,
+    api::utils::{validator::validate_page_size_max},
     domain::article::model::{ArticleCreateModel, ArticleModel, ArticleUpdateModel},
 };
+
+#[cfg(test)]
+use crate::api::utils::random_string;
 
 #[cfg_attr(test, derive(Serialize))]
 #[derive(Debug, Deserialize, Validate, ToSchema, Clone)]
@@ -54,9 +57,9 @@ impl From<RequestCreateArticle> for ArticleCreateModel {
 impl RequestCreateArticle {
     pub fn mock_default() -> Self {
         Self {
-            extid: "1".to_string(),
-            name: "article".to_string(),
-            link: "article".to_string(),
+            extid: random_string(10),
+            name: random_string(10),
+            link: random_string(10),
             description: "The famous article".to_string(),
             time_m: 5,
             source: "source".to_string(),
@@ -112,7 +115,7 @@ impl RequestUpdateArticle {
     pub fn mock_default() -> Self {
         Self {
             name: "article".to_string(),
-            link: "article".to_string(),
+            link: random_string(10),
             description: "The famous article".to_string(),
             time_m: 5,
             source: "source".to_string(),

@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 #[derive(Debug, Clone)]
 pub struct CityCreateModel {
     pub cityid: Uuid,
@@ -41,9 +44,9 @@ impl CityCreateModel {
         Self {
             stateid: Uuid::new_v4(),
             cityid: Uuid::new_v4(),
-            name: "New Jersey".to_string(),
-            slug: "new-jersey".to_string(),
-            extid: "test".to_string(),
+            name: random_string(10),
+            slug: random_string(10),
+            extid: random_string(10),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -111,9 +114,9 @@ impl CityModel {
     pub fn mock_default() -> Self {
         Self {
             cityid: Uuid::new_v4(),
-            name: "Ohio".to_string(),
-            slug: "ohio".to_string(),
-            extid: "ca".to_string(),
+            name: random_string(10),
+            slug: random_string(10),
+            extid: random_string(10),
             stateid: Uuid::new_v4(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),

@@ -4,8 +4,11 @@ use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 use validator::Validate;
 
+#[cfg(test)]
+use crate::api::utils::random_string;
+
 use crate::{
-    api::utils::validator::validate_page_size_max,
+    api::utils::{validator::validate_page_size_max},
     domain::event::model::{EventCreateModel, EventModel, EventUpdateModel},
 };
 
@@ -69,12 +72,12 @@ impl RequestCreateEvent {
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
             groupid: uuid::Uuid::new_v4(),
-            extid: "m-event".to_string(),
+            extid: random_string(10),
             in_person: true,
             is_online: true,
             time: DateTime::default(),
             duration: 5,
-            link: "".to_string(),
+            link: random_string(10),
             waitlist_count: 5,
             fee: false,
             yes_rsvp_count: 5,
@@ -147,7 +150,7 @@ impl RequestUpdateEvent {
             is_online: true,
             time: DateTime::default(),
             duration: 5,
-            link: "".to_string(),
+            link: random_string(10),
             waitlist_count: 5,
             fee: false,
             yes_rsvp_count: 5,
