@@ -315,6 +315,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "apidatarootca"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-http",
+ "actix-web",
+ "async-trait",
+ "chrono",
+ "deadpool-postgres",
+ "dotenv",
+ "env_logger",
+ "futures",
+ "lapin",
+ "lazy_static",
+ "log",
+ "mockall",
+ "pem",
+ "rand",
+ "redis",
+ "refinery",
+ "rustls",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "thiserror",
+ "tokio",
+ "tokio-postgres",
+ "tokio-postgres-rustls",
+ "utoipa",
+ "utoipa-swagger-ui",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "async-channel"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1943,41 +1978,6 @@ checksum = "512b0ab6853f7e14e3c8754acb43d6f748bb9ced66aa5915a6553ac8213f7731"
 dependencies = [
  "sha2",
  "walkdir",
-]
-
-[[package]]
-name = "rust-http-template"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-http",
- "actix-web",
- "async-trait",
- "chrono",
- "deadpool-postgres",
- "dotenv",
- "env_logger",
- "futures",
- "lapin",
- "lazy_static",
- "log",
- "mockall",
- "pem",
- "rand",
- "redis",
- "refinery",
- "rustls",
- "serde",
- "serde_json",
- "serde_qs",
- "thiserror",
- "tokio",
- "tokio-postgres",
- "tokio-postgres-rustls",
- "utoipa",
- "utoipa-swagger-ui",
- "uuid",
- "validator",
 ]
 
 [[package]]
