@@ -1,12 +1,10 @@
-CREATE SEQUENCE IF NOT EXISTS cityid_cityid_seq;
-
-CREATE TABLE IF NOT EXISTS "city" (
+CREATE TABLE "city" (
     "cityid" uuid NOT NULL,
-    "created_at" timestamptz default now(),
+    "created_at" timestamptz DEFAULT now(),
     "updated_at" timestamptz,
-    "extid" varchar NOT NULL,
-    "name" varchar NOT NULL,
-    "slug" varchar NOT NULL,
+    "extid" varchar NOT NULL UNIQUE,
+    "name" varchar NOT NULL UNIQUE,
+    "slug" varchar NOT NULL UNIQUE,
     "stateid" uuid NOT NULL,
     "highres_link" varchar,
     "photo_link" varchar,
@@ -14,6 +12,17 @@ CREATE TABLE IF NOT EXISTS "city" (
     PRIMARY KEY ("cityid")
 );
 
+-- Column Comment
+COMMENT ON COLUMN "city"."cityid" IS 'Primary key';
+COMMENT ON COLUMN "city"."created_at" IS 'Creation timestamp';
+COMMENT ON COLUMN "city"."updated_at" IS 'Last update timestamp';
+COMMENT ON COLUMN "city"."extid" IS 'External identifier';
+COMMENT ON COLUMN "city"."name" IS 'City name';
+COMMENT ON COLUMN "city"."slug" IS 'URL slug';
+COMMENT ON COLUMN "city"."stateid" IS 'State ID';
+COMMENT ON COLUMN "city"."highres_link" IS 'High-res photo link';
+COMMENT ON COLUMN "city"."photo_link" IS 'Photo link';
+COMMENT ON COLUMN "city"."thumb_link" IS 'Thumbnail link';
 
 INSERT INTO "city" ("cityid", "created_at", "updated_at", "extid", "name", "slug", "stateid") VALUES
 ('d300b6c2-842a-41a8-bde2-8e7367ec28e1', '2023-06-18 19:07:21.914266', NULL, '1', 'Airdrie', 'airdrie', 'd300b6c2-842a-41a8-bde2-8e7367ec28e1'),

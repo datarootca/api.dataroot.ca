@@ -7,7 +7,10 @@ use crate::{
         state::PgStateRepository,
         health::PgHealthRepository,
         postgres::{self, init_to_tests},
-        redis, city::PgCityRepository, article::PgArticleRepository,
+        redis, city::PgCityRepository, 
+        article::PgArticleRepository, 
+        group::PgGroupRepository, 
+        event::PgEventRepository,
     },
 };
 
@@ -43,7 +46,9 @@ pub struct Repositories {
     pub category_repository: Arc<PgCategoryRepository>,
     pub state_repository: Arc<PgStateRepository>,
     pub city_repository: Arc<PgCityRepository>,
-    pub article_repository: Arc<PgArticleRepository>
+    pub article_repository: Arc<PgArticleRepository>,
+    pub group_repository: Arc<PgGroupRepository>,
+    pub event_repository: Arc<PgEventRepository>,
 }
 
 impl Repositories {
@@ -54,6 +59,8 @@ impl Repositories {
         state_repository: Arc<PgStateRepository>,
         city_repository: Arc<PgCityRepository>,
         article_repository: Arc<PgArticleRepository>,
+        group_repository: Arc<PgGroupRepository>,
+        event_repository: Arc<PgEventRepository>,
     ) -> Self {
         Self {
             health_repository,
@@ -61,6 +68,8 @@ impl Repositories {
             state_repository,
             city_repository,
             article_repository,
+            group_repository,
+            event_repository,
         }
     }
 }
@@ -73,6 +82,8 @@ impl AppState {
             state_repository: repositories.state_repository.clone(),
             city_repository: repositories.city_repository.clone(),
             article_repository: repositories.article_repository.clone(),
+            group_repository: repositories.group_repository.clone(),
+            event_repository: repositories.event_repository.clone(),
         })
     }
 }
@@ -114,6 +125,8 @@ where
     let state_repository = Arc::new(PgStateRepository::new(pool.clone()));
     let city_repository = Arc::new(PgCityRepository::new(pool.clone()));
     let article_repository = Arc::new(PgArticleRepository::new(pool.clone()));
+    let group_repository = Arc::new(PgGroupRepository::new(pool.clone()));
+    let event_repository = Arc::new(PgEventRepository::new(pool.clone()));
 
     let repositories = Repositories::new(
         health_repository, 
@@ -121,6 +134,8 @@ where
         state_repository,
         city_repository,
         article_repository,
+        group_repository,
+        event_repository,
     );
 
     let app_state = AppState::mock_default(&repositories);

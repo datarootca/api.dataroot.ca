@@ -14,10 +14,10 @@ use crate::{
         config,
         error::ErrorResponse,
         middleware,
-        resources::{health, swagger, categories,state,city},
+        resources::{health, swagger, categories,state,city,article,group,event},
     },
-    domain::{categories::repository::CategoryRepository, health::repository::HealthRepository, state::repository::StateRepository, city::repository::CityRepository, article::repository::ArticleRepository},
-    repository::{categories::PgCategoryRepository, health::PgHealthRepository,state::PgStateRepository, postgres, city::PgCityRepository},
+    domain::{categories::repository::CategoryRepository, health::repository::HealthRepository, state::repository::StateRepository, city::repository::CityRepository, article::repository::ArticleRepository, group::repository::GroupRepository, event::repository::EventRepository},
+    repository::{categories::PgCategoryRepository, health::PgHealthRepository,state::PgStateRepository, postgres, city::PgCityRepository, article::PgArticleRepository, event::PgEventRepository, group::PgGroupRepository},
 };
 
 pub struct AppState {
@@ -26,6 +26,8 @@ pub struct AppState {
     pub state_repository: Arc<dyn StateRepository>,
     pub city_repository: Arc<dyn CityRepository>,
     pub article_repository: Arc<dyn ArticleRepository>,
+    pub group_repository: Arc<dyn GroupRepository>,
+    pub event_repository: Arc<dyn EventRepository>,
 }
 
 pub async fn run(pg_pool: Arc<Pool>, redis_client: Arc<Client>) -> Result<(), Box<dyn Error>> {
@@ -58,6 +60,8 @@ pub async fn run(pg_pool: Arc<Pool>, redis_client: Arc<Client>) -> Result<(), Bo
         state_repository: Arc::new(PgStateRepository::new(pg_pool.clone())),
         city_repository: Arc::new(PgCityRepository::new(pg_pool.clone())),
         article_repository: Arc::new(PgArticleRepository::new(pg_pool.clone())),
+        group_repository: Arc::new(PgGroupRepository::new(pg_pool.clone())),
+        event_repository: Arc::new(PgEventRepository::new(pg_pool.clone())),
     });
 
     let web_addr = &config::get_config().web_addr;
@@ -85,6 +89,9 @@ pub async fn run(pg_pool: Arc<Pool>, redis_client: Arc<Client>) -> Result<(), Bo
             .configure(categories::routes::init_routes)
             .configure(city::routes::init_routes)
             .configure(state::routes::init_routes)
+            .configure(article::routes::init_routes)
+            .configure(group::routes::init_routes)
+            .configure(event::routes::init_routes)
     })
     .bind(web_addr)?
     .run()

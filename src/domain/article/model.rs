@@ -135,9 +135,12 @@ pub struct ArticleModel {
     pub link: String,
     pub source: String,
     pub author: String,
+    pub highres_link: Option<String>,
+    pub photo_link: Option<String>,
+    pub thumb_link: Option<String>,
     pub publish_at: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 #[cfg(test)]
 impl ArticleModel {
@@ -151,9 +154,12 @@ impl ArticleModel {
             time_m: 5,
             source: "source".to_string(),
             author: "author".to_string(),
+            highres_link: Some("highres_link".to_string()),
+            photo_link: Some("photo_link".to_string()),
+            thumb_link: Some("thumb_link".to_string()),
             publish_at: DateTime::default(),
             created_at: DateTime::default(),
-            updated_at: DateTime::default(),
+            updated_at: Some(DateTime::default()),
         }
     }
 }

@@ -10,30 +10,30 @@ use crate::{
     api::{
         config,
         lib::AppState,
-        resources::article::dto::{self, ResponseArticle},
+        resources::group::dto::{self, ResponseGroup},
         utils::response::ApiResponse,
     },
-    domain::{article, error::DomainError},
+    domain::{group, error::DomainError},
 };
 
 #[utoipa::path(
     get,
-    operation_id = "find_article",
-    path = "/article",
-    tag = "article",
+    operation_id = "find_group",
+    path = "/group",
+    tag = "group",
     params(
-        dto::RequestFindArticle
+        dto::RequestFindGroup
     ),
     responses(
-         (status = 200, description = "article",  body = ApiResponseArticle),
-         (status = 204, description = "no content article"),
+         (status = 200, description = "group",  body = ApiResponseGroup),
+         (status = 204, description = "no content group"),
          (status = 400, description = "Invalid query parameters",  body = ErrorResponse),
     ),
  )]
-#[get("/article")]
+#[get("/group")]
 async fn handler(
     state: Data<AppState>,
-    query: Query<dto::RequestFindArticle>,
+    query: Query<dto::RequestFindGroup>,
 ) -> Result<HttpResponse, DomainError> {
     query.validate()?;
 
@@ -44,8 +44,8 @@ async fn handler(
 
     let name = query.name.to_owned();
 
-    let result = article::resources::find::execute(
-        state.article_repository.clone(),
+    let result = group::resources::find::execute(
+        state.group_repository.clone(),
         name,
         page,
         page_size,
@@ -53,7 +53,7 @@ async fn handler(
     .await?;
 
     if let Some((state, count)) = result {
-        let response = ApiResponse::<ResponseArticle>::new(
+        let response = ApiResponse::<ResponseGroup>::new(
             state.into_iter().map(|i| i.into()).collect(),
             Some(page),
             Some(count),
@@ -71,51 +71,51 @@ mod tests {
 
     use crate::{
         api::{
-            resources::article::{dto, routes::init_routes},
+            resources::group::{dto, routes::init_routes},
             tests::utils::get_app,
             utils::response::ApiResponse,
         },
-        domain::article::{model::ArticleCreateModel, repository::ArticleRepository},
+        domain::group::{model::GroupCreateModel, repository::GroupRepository},
     };
 
     #[actix_web::test]
-    async fn it_should_return_article_finded() {
+    async fn it_should_return_group_finded() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
-        let article_model = ArticleCreateModel::mock_default();
+        let group_model = GroupCreateModel::mock_default();
         repositories
-            .article_repository
-            .insert(&article_model.clone())
+            .group_repository
+            .insert(&group_model.clone())
             .await
             .unwrap();
 
-        let req = test::TestRequest::get().uri("/article").to_request();
+        let req = test::TestRequest::get().uri("/group").to_request();
         let res = test::call_service(&app, req).await;
 
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_article_finded: ApiResponse<dto::ResponseArticle> =
+        let response_group_finded: ApiResponse<dto::ResponseGroup> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
-        assert!(!response_article_finded.records.is_empty());
+        assert!(!response_group_finded.records.is_empty());
     }
     #[actix_web::test]
     async fn it_should_return_state_finded_by_query() {
         let (repositories, app) = get_app(init_routes).await;
 
         //Seed
-        let state_model = ArticleCreateModel::mock_default();
+        let state_model = GroupCreateModel::mock_default();
         repositories
-            .article_repository
+            .group_repository
             .insert(&state_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
             .uri(&format!(
-                "/article?name={}&page=1&page_size=24",
+                "/group?name={}&page=1&page_size=24",
                 "Burgers",
             ))
             .to_request();
@@ -124,18 +124,18 @@ mod tests {
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_article_finded: ApiResponse<dto::ResponseArticle> =
+        let response_group_finded: ApiResponse<dto::ResponseGroup> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
-        assert!(!response_article_finded.records.is_empty());
+        assert!(!response_group_finded.records.is_empty());
     }
 
     #[actix_web::test]
-    async fn it_should_return_article_no_content() {
+    async fn it_should_return_group_no_content() {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::get()
-            .uri(&format!("/article?name={}", "no-content",))
+            .uri(&format!("/group?name={}", "no-content",))
             .to_request();
 
         let res = test::call_service(&app, req).await;
@@ -148,7 +148,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::get()
-            .uri(&format!("/article?page={}&page_size=24", "invalid",))
+            .uri(&format!("/group?page={}&page_size=24", "invalid",))
             .to_request();
 
         let res = test::call_service(&app, req).await;

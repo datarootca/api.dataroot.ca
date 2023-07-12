@@ -149,7 +149,7 @@ pub struct GroupModel {
     pub photo_link: Option<String>,
     pub thumb_link: Option<String>,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 #[cfg(test)]
 impl GroupModel {
@@ -160,7 +160,7 @@ impl GroupModel {
             description: "The Big Group".to_string(),
             extid: "group".to_string(),
             slug: "the-big-group".to_string(),
-            organizer: "organizer".to_string(),
+            organizer: "organizer"  .to_string(),
             active: true,
             private: true,
             members: 100,
@@ -169,7 +169,7 @@ impl GroupModel {
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
             created_at: DateTime::default(),
-            updated_at: DateTime::default(),
+            updated_at: Some(DateTime::default()),
         }
     }
 }

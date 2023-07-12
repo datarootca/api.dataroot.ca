@@ -74,7 +74,7 @@ const QUERY_INSERT_ARTICLE: &str = "
         updated_at,
         highres_link,
         photo_link,
-        thumb_link,;";
+        thumb_link;";
 
 const QUERY_UPDATE_ARTICLE_BY_ID: &str = "
     update
@@ -107,7 +107,7 @@ const QUERY_UPDATE_ARTICLE_BY_ID: &str = "
         updated_at,
         highres_link,
         photo_link,
-        thumb_link,;";
+        thumb_link;";
 
 const QUERY_DELETE_ARTICLE_BY_ID: &str = "
             delete from
@@ -256,6 +256,9 @@ impl From<&Row> for ArticleModel {
             source: row.get("source"),
             link: row.get("link"),
             author: row.get("author"),
+            highres_link: row.get("highres_link"),
+            photo_link: row.get("photo_link"),
+            thumb_link: row.get("thumb_link"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         }

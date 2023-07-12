@@ -194,7 +194,7 @@ pub struct EventModel {
     pub photo_link: Option<String>,
     pub thumb_link: Option<String>,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 #[cfg(test)]
 impl EventModel {
@@ -219,7 +219,7 @@ impl EventModel {
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
             created_at: DateTime::default(),
-            updated_at: DateTime::default(),
+            updated_at: Some(DateTime::default()),
         }
     }
 }

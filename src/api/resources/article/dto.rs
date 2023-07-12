@@ -16,6 +16,8 @@ pub struct RequestCreateArticle {
     pub name: String,
     #[validate(length(max = 512))]
     pub description: String,
+    pub time_m: i32,
+    pub publish_at: DateTime<Utc>,
     #[validate(length(max = 64))]
     pub source: String,
     #[validate(length(max = 64))]
@@ -24,9 +26,6 @@ pub struct RequestCreateArticle {
     pub link: String,
     #[validate(length(max = 64))]
     pub extid: String,
-    pub stateid: Uuid,
-    #[validate(length(max = 64))]
-    pub slug: String,
     #[validate(length(max = 512))]
     pub highres_link: Option<String>,
     #[validate(length(max = 512))]
@@ -55,13 +54,17 @@ impl From<RequestCreateArticle> for ArticleCreateModel {
 impl RequestCreateArticle {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            slug: "ca".to_string(),
-            extid: "ca".to_string(),
-            stateid: uuid::Uuid::new_v4(),
-            highres_link: Some("".to_string()),
-            photo_link: Some("".to_string()),
-            thumb_link: Some("".to_string()),
+            extid: "1".to_string(),
+            name: "article".to_string(),
+            link: "article".to_string(),
+            description: "The famous article".to_string(),
+            time_m: 5,
+            source: "source".to_string(),
+            author: "author".to_string(),
+            publish_at: DateTime::default(),
+            highres_link: Some("The img".to_string()),
+            photo_link: Some("The img".to_string()),
+            thumb_link: Some("The img".to_string()),
         }
     }
 }
@@ -71,9 +74,16 @@ impl RequestCreateArticle {
 pub struct RequestUpdateArticle {
     #[validate(length(max = 64))]
     pub name: String,
-    pub stateid: Uuid,
+    #[validate(length(max = 512))]
+    pub description: String,
+    pub time_m: i32,
+    pub publish_at: DateTime<Utc>,
     #[validate(length(max = 64))]
-    pub slug: String,
+    pub source: String,
+    #[validate(length(max = 64))]
+    pub author: String,
+    #[validate(length(max = 64))]
+    pub link: String,
     #[validate(length(max = 512))]
     pub highres_link: Option<String>,
     #[validate(length(max = 512))]
@@ -85,8 +95,12 @@ impl From<RequestUpdateArticle> for ArticleUpdateModel {
     fn from(value: RequestUpdateArticle) -> Self {
         ArticleUpdateModel::new(
             value.name, 
-            value.slug,
-            value.stateid,
+            Some(value.description),
+            value.time_m,
+            value.link,
+            value.source,
+            value.author,
+            value.publish_at,
             value.highres_link,
             value.photo_link,
             value.thumb_link,
@@ -97,12 +111,16 @@ impl From<RequestUpdateArticle> for ArticleUpdateModel {
 impl RequestUpdateArticle {
     pub fn mock_default() -> Self {
         Self {
-            name: "California".to_string(),
-            slug: "ca".to_string(),
-            stateid: uuid::Uuid::new_v4(),
-            highres_link: Some("".to_string()),
-            photo_link: Some("".to_string()),
-            thumb_link: Some("".to_string()),
+            name: "article".to_string(),
+            link: "article".to_string(),
+            description: "The famous article".to_string(),
+            time_m: 5,
+            source: "source".to_string(),
+            author: "author".to_string(),
+            publish_at: DateTime::default(),
+            highres_link: Some("The img".to_string()),
+            photo_link: Some("The img".to_string()),
+            thumb_link: Some("The img".to_string()),
         }
     }
 
@@ -113,7 +131,7 @@ impl RequestUpdateArticle {
 }
 
 #[derive(Debug, Clone, Deserialize, Validate, IntoParams)]
-pub struct RequestFindCategories {
+pub struct RequestFindArticle {
     #[validate(length(max = 64))]
     pub name: Option<String>,
     pub page: Option<u32>,
@@ -125,16 +143,21 @@ pub struct RequestFindCategories {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseArticle {
     pub articleid: Uuid,
-    pub stateid: Uuid,
-    pub name: String,
-    pub slug: String,
     pub extid: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub time_m: i32,
+    pub link: String,
+    pub source: String,
+    pub author: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub highres_link: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub photo_link: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thumb_link: Option<String>,
+    pub publish_at: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_at: Option<DateTime<Utc>>,
@@ -143,13 +166,17 @@ impl From<ArticleModel> for ResponseArticle {
     fn from(value: ArticleModel) -> Self {
         Self {
             articleid: value.articleid,
-            stateid: value.stateid,
-            name: value.name,
-            slug: value.slug,
             extid: value.extid,
+            name: value.name,
+            description: value.description,
+            time_m: value.time_m,
+            link: value.link,
+            source: value.source,
+            author: value.author,
             highres_link: value.highres_link,
-            thumb_link: value.thumb_link,
             photo_link: value.photo_link,
+            thumb_link: value.thumb_link,
+            publish_at: value.publish_at,
             created_at: value.created_at,
             updated_at: value.updated_at,
         }

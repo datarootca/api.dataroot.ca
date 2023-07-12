@@ -4,7 +4,11 @@ use utoipa::ToSchema;
 use crate::api::{
     config::get_config, 
     resources::state::dto::ResponseState,
-    resources::categories::dto::ResponseCategory
+    resources::categories::dto::ResponseCategory,
+    resources::city::dto::ResponseCity,
+    resources::group::dto::ResponseGroup,
+    resources::article::dto::ResponseArticle,
+    resources::event::dto::ResponseEvent,
 };
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -28,7 +32,14 @@ impl Meta {
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
-#[aliases(ApiResponseCategory = ApiResponse<ResponseCategory>,ApiResponseState = ApiResponse<ResponseState>)]
+#[aliases(
+    ApiResponseCategory = ApiResponse<ResponseCategory>,
+    ApiResponseState = ApiResponse<ResponseState>,
+    ApiResponseArticle = ApiResponse<ResponseArticle>,
+    ApiResponseEvent = ApiResponse<ResponseEvent>,
+    ApiResponseCity = ApiResponse<ResponseCity>,
+    ApiResponseGroup = ApiResponse<ResponseGroup>,
+)]
 pub struct ApiResponse<T> {
     pub meta: Meta,
     pub records: Vec<T>,
