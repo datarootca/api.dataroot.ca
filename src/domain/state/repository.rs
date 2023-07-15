@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use uuid::Uuid;
 
 use crate::domain::error::DomainError;
 
@@ -13,15 +12,15 @@ pub trait StateRepository: Send + Sync {
         page: &u32,
         page_size: &u32,
     ) -> Result<Option<(Vec<StateModel>, u32)>, DomainError>;
-    async fn find_by_stateid(&self, id: &Uuid) -> Result<Option<StateModel>, DomainError>;
+    async fn find_by_stateid(&self, id: &i32) -> Result<Option<StateModel>, DomainError>;
     async fn insert(
         &self,
         state_create_model: &StateCreateModel,
     ) -> Result<StateModel, DomainError>;
     async fn update_by_stateid(
         &self,
-        id: &Uuid,
+        id: &i32,
         state_update_model: &StateUpdateModel,
     ) -> Result<StateModel, DomainError>;
-    async fn delete_by_stateid(&self, id: &Uuid) -> Result<(), DomainError>;
+    async fn delete_by_stateid(&self, id: &i32) -> Result<(), DomainError>;
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     article::{
@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub async fn execute(
     article_repository: Arc<dyn ArticleRepository>,
-    id: Uuid,
+    id: i32,
     article_update_model: ArticleUpdateModel,
 ) -> Result<ArticleModel, DomainError> {
     let has_article = article_repository.find_by_articleid(&id).await?;
@@ -29,7 +29,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::article::model::ArticleCreateModel;
+    use crate::{domain::article::model::ArticleCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod tests {
         #[async_trait]
         impl ArticleRepository for FakeArticleRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<ArticleModel>, u32)>, DomainError>;
-            async fn find_by_articleid(&self, id: &Uuid) -> Result<Option<ArticleModel>, DomainError>;
+            async fn find_by_articleid(&self, id: &i32) -> Result<Option<ArticleModel>, DomainError>;
             async fn insert(&self,article_create_model: &ArticleCreateModel) -> Result<ArticleModel, DomainError>;
-            async fn update_by_articleid(&self,id: &Uuid,article_update_model: &ArticleUpdateModel) -> Result<ArticleModel, DomainError>;
-            async fn delete_by_articleid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_articleid(&self,id: &i32,article_update_model: &ArticleUpdateModel) -> Result<ArticleModel, DomainError>;
+            async fn delete_by_articleid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +67,13 @@ mod tests {
 
         let response = execute(
             Arc::new(article_repository),
-            Uuid::new_v4(),
+            random_number(),
             mock_request_article_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.articleid.is_nil());
+        assert!(response.articleid != 0);
     }
 
     #[tokio::test]
@@ -85,7 +85,7 @@ mod tests {
 
         let result = execute(
             Arc::new(article_repository),
-            Uuid::new_v4(),
+            random_number(),
             ArticleUpdateModel::mock_default(),
         )
         .await;

@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{event::repository::EventRepository, error::DomainError};
 
 pub async fn execute(
     event_repository: Arc<dyn EventRepository>,
-    event_id: Uuid,
+    event_id: i32,
 ) -> Result<(), DomainError> {
     let has_event = event_repository.find_by_eventid(&event_id).await?;
     if has_event.is_none() {
@@ -22,11 +22,11 @@ pub async fn execute(
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
-    use uuid::Uuid;
+    
 
-    use crate::domain::event::model::{
+    use crate::{domain::event::model::{
         EventCreateModel, EventModel, EventUpdateModel,
-    };
+    }, api::utils::random_number};
 
     use super::*;
 
@@ -36,10 +36,10 @@ mod tests {
         #[async_trait]
         impl EventRepository for FakeEventRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<EventModel>, u32)>, DomainError>;
-            async fn find_by_eventid(&self, id: &Uuid) -> Result<Option<EventModel>, DomainError>;
+            async fn find_by_eventid(&self, id: &i32) -> Result<Option<EventModel>, DomainError>;
             async fn insert(&self,event_create_model: &EventCreateModel) -> Result<EventModel, DomainError>;
-            async fn update_by_eventid(&self,id: &Uuid,event_update_model: &EventUpdateModel) -> Result<EventModel, DomainError>;
-            async fn delete_by_eventid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_eventid(&self,id: &i32,event_update_model: &EventUpdateModel) -> Result<EventModel, DomainError>;
+            async fn delete_by_eventid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -55,7 +55,7 @@ mod tests {
             .expect_delete_by_eventid()
             .return_once(|_| Ok(()));
 
-        let result = execute(Arc::new(event_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(event_repository), random_number()).await;
 
         match result {
             Ok(()) => {}
@@ -71,7 +71,7 @@ mod tests {
             .expect_find_by_eventid()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(event_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(event_repository), random_number()).await;
 
         match result {
             Err(DomainError::NotFound(_)) => {}

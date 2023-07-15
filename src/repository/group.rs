@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
 
 use crate::domain::{
     group::{
@@ -59,9 +58,9 @@ const QUERY_FIND_GROUP_BY_ID: &str = "
         groupid = $1;";
 
 const QUERY_INSERT_GROUP: &str = "
-    insert into \"group\"(groupid,name,description,extid,slug,private,members,cityid,organizer,highres_link,photo_link,thumb_link,active)
+    insert into \"group\"(name,description,extid,slug,private,members,cityid,organizer,highres_link,photo_link,thumb_link,active)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
     returning
         groupid,
         name,
@@ -172,7 +171,7 @@ impl GroupRepository for PgGroupRepository {
         return Ok(None);
     }
 
-    async fn find_by_groupid(&self, id: &Uuid) -> Result<Option<GroupModel>, DomainError> {
+    async fn find_by_groupid(&self, id: &i32) -> Result<Option<GroupModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_GROUP_BY_ID).await?;
 
@@ -193,7 +192,6 @@ impl GroupRepository for PgGroupRepository {
             .query_one(
                 &stmt,
                 &[
-                    &group_create_model.groupid,
                     &group_create_model.name,
                     &group_create_model.description,
                     &group_create_model.extid,
@@ -214,7 +212,7 @@ impl GroupRepository for PgGroupRepository {
 
     async fn update_by_groupid(
         &self,
-        groupid: &Uuid,
+        groupid: &i32,
         group_update_model: &GroupUpdateModel,
     ) -> Result<GroupModel, DomainError> {
         let client = self.pool.get().await?;
@@ -244,7 +242,7 @@ impl GroupRepository for PgGroupRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_groupid(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_groupid(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_GROUP_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

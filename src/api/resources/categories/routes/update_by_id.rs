@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     path = "/categories/{category_id}",
     tag = "categories",
     params(
-        ("category_id" = Uuid, Path, description = "Category uuid"),
+        ("category_id" = i32, Path, description = "Category uuid"),
     ),
     request_body = RequestUpdateCategory,
     responses(
@@ -33,7 +33,7 @@ use crate::{
 #[put("/categories/{category_id}")]
 async fn handler(
     state: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
     body: web::Json<dto::RequestUpdateCategory>,
 ) -> Result<HttpResponse, DomainError> {
     body.validate()?;
@@ -53,13 +53,13 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
         api::{
             resources::categories::{dto, routes::init_routes},
             tests::utils::get_app,
-            utils::response::ApiResponse,
+            utils::{response::ApiResponse, random_number},
         },
         domain::categories::{model::CategoryCreateModel, repository::CategoryRepository},
     };
@@ -70,7 +70,7 @@ mod tests {
 
         //Seed
         let category_model = CategoryCreateModel::mock_default();
-        repositories
+        let category = repositories
             .category_repository
             .insert(&category_model.clone())
             .await
@@ -79,7 +79,7 @@ mod tests {
         let mock_request_update_category =
             dto::RequestUpdateCategory::mock_default().with_name("Burgers Supreme");
         let req = test::TestRequest::put()
-            .uri(&format!("/categories/{}", category_model.id))
+            .uri(&format!("/categories/{}", category.id))
             .set_json(mock_request_update_category.clone())
             .to_request();
         let res = test::call_service(&app, req).await;
@@ -101,7 +101,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::put()
-            .uri(&format!("/categories/{}", Uuid::new_v4()))
+            .uri(&format!("/categories/{}", random_number().to_string()))
             .set_json(dto::RequestUpdateCategory::mock_default().with_name("weapons update 3"))
             .to_request();
         let res = test::call_service(&app, req).await;

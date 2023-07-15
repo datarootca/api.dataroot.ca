@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     categories::{model::CategoryModel, repository::CategoryRepository},
@@ -9,7 +9,7 @@ use crate::domain::{
 
 pub async fn execute(
     category_repository: Arc<dyn CategoryRepository>,
-    id: Uuid,
+    id: i32,
 ) -> Result<Option<CategoryModel>, DomainError> {
     if let Some(category) = category_repository.find_by_id(&id).await? {
         return Ok(Some(category));
@@ -22,7 +22,7 @@ mod tests {
     use async_trait::async_trait;
     use mockall::mock;
 
-    use crate::domain::categories::model::{CategoryCreateModel, CategoryUpdateModel};
+    use crate::{domain::categories::model::{CategoryCreateModel, CategoryUpdateModel}, api::utils::random_number};
 
     use super::*;
 
@@ -32,10 +32,10 @@ mod tests {
         #[async_trait]
         impl CategoryRepository for FakeCategoryRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<CategoryModel>, u32)>, DomainError>;
-            async fn find_by_id(&self, id: &Uuid) -> Result<Option<CategoryModel>, DomainError>;
+            async fn find_by_id(&self, id: &i32) -> Result<Option<CategoryModel>, DomainError>;
             async fn insert(&self,category_create_model: &CategoryCreateModel) -> Result<CategoryModel, DomainError>;
-            async fn update_by_id(&self,id: &Uuid,category_update_model: &CategoryUpdateModel) -> Result<CategoryModel, DomainError>;
-            async fn delete_by_id(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_id(&self,id: &i32,category_update_model: &CategoryUpdateModel) -> Result<CategoryModel, DomainError>;
+            async fn delete_by_id(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -47,7 +47,7 @@ mod tests {
             .expect_find_by_id()
             .return_once(|_| Ok(Some(CategoryModel::mock_default())));
 
-        let result = execute(Arc::new(category_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(category_repository), random_number()).await;
 
         match result {
             Ok(_) => {}
@@ -63,7 +63,7 @@ mod tests {
             .expect_find_by_id()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(category_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(category_repository), random_number()).await;
 
         match result {
             Ok(result) => {

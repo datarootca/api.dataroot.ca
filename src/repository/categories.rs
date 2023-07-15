@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
 
 use crate::domain::{
     categories::{
@@ -41,9 +40,9 @@ const QUERY_FIND_CATEGORY_BY_ID: &str = "
 
 const QUERY_INSERT_CATEGORY: &str = "
     insert into category
-        (id, name, description)
+        (name, description)
     values
-        ($1,$2,$3)
+        ($1,$2)
     returning
         id as category_id,
         name as category_name,
@@ -127,7 +126,7 @@ impl CategoryRepository for PgCategoryRepository {
         return Ok(None);
     }
 
-    async fn find_by_id(&self, id: &Uuid) -> Result<Option<CategoryModel>, DomainError> {
+    async fn find_by_id(&self, id: &i32) -> Result<Option<CategoryModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_CATEGORY_BY_ID).await?;
 
@@ -148,7 +147,6 @@ impl CategoryRepository for PgCategoryRepository {
             .query_one(
                 &stmt,
                 &[
-                    &category_create_model.id,
                     &category_create_model.name,
                     &category_create_model.description,
                 ],
@@ -160,7 +158,7 @@ impl CategoryRepository for PgCategoryRepository {
 
     async fn update_by_id(
         &self,
-        id: &Uuid,
+        id: &i32,
         category_update_model: &CategoryUpdateModel,
     ) -> Result<CategoryModel, DomainError> {
         let client = self.pool.get().await?;
@@ -179,7 +177,7 @@ impl CategoryRepository for PgCategoryRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_id(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_id(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_CATEGORY_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

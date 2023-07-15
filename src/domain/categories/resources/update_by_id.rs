@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     categories::{
@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub async fn execute(
     category_repository: Arc<dyn CategoryRepository>,
-    id: Uuid,
+    id: i32,
     category_update_model: CategoryUpdateModel,
 ) -> Result<CategoryModel, DomainError> {
     let has_category = category_repository.find_by_id(&id).await?;
@@ -29,7 +29,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::categories::model::CategoryCreateModel;
+    use crate::{domain::categories::model::CategoryCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod tests {
         #[async_trait]
         impl CategoryRepository for FakeCategoryRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<CategoryModel>, u32)>, DomainError>;
-            async fn find_by_id(&self, id: &Uuid) -> Result<Option<CategoryModel>, DomainError>;
+            async fn find_by_id(&self, id: &i32) -> Result<Option<CategoryModel>, DomainError>;
             async fn insert(&self,category_create_model: &CategoryCreateModel) -> Result<CategoryModel, DomainError>;
-            async fn update_by_id(&self,id: &Uuid,category_update_model: &CategoryUpdateModel) -> Result<CategoryModel, DomainError>;
-            async fn delete_by_id(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_id(&self,id: &i32,category_update_model: &CategoryUpdateModel) -> Result<CategoryModel, DomainError>;
+            async fn delete_by_id(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +67,13 @@ mod tests {
 
         let response = execute(
             Arc::new(category_repository),
-            Uuid::new_v4(),
+            random_number(),
             mock_request_category_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.id.is_nil());
+        assert!(response.id != 0);
     }
 
     #[tokio::test]
@@ -85,7 +85,7 @@ mod tests {
 
         let result = execute(
             Arc::new(category_repository),
-            Uuid::new_v4(),
+            random_number(),
             CategoryUpdateModel::mock_default(),
         )
         .await;

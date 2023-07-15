@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 
 use crate::{
     api::{
@@ -18,7 +18,7 @@ use crate::{
     path = "/categories/{category_id}",
     tag = "categories",
     params(
-        ("category_id" = Uuid, Path, description = "Category uuid"),
+        ("category_id" = i32, Path, description = "Category uuid"),
     ),
     responses(
          (status = 200, description = "Category finded",  body = ApiResponseCategory),
@@ -28,7 +28,7 @@ use crate::{
 #[get("/categories/{category_id}")]
 async fn handler(
     state: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
 ) -> Result<HttpResponse, DomainError> {
     let result = categories::resources::find_by_id::execute(
         state.category_repository.clone(),
@@ -49,10 +49,10 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
-        api::{resources::categories::routes::init_routes, tests::utils::get_app},
+        api::{resources::categories::routes::init_routes, tests::utils::get_app, utils::random_number},
         domain::categories::{model::CategoryCreateModel, repository::CategoryRepository},
     };
 
@@ -62,14 +62,14 @@ mod tests {
 
         //Seed
         let category_model = CategoryCreateModel::mock_default();
-        repositories
+        let category = repositories
             .category_repository
             .insert(&category_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
-            .uri(&format!("/categories/{}", category_model.id))
+            .uri(&format!("/categories/{}", category.id))
             .to_request();
         let res = test::call_service(&app, req).await;
 
@@ -81,7 +81,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::get()
-            .uri(&format!("/categories/{}", Uuid::new_v4()))
+            .uri(&format!("/categories/{}", random_number().to_string()))
             .to_request();
         let res = test::call_service(&app, req).await;
 

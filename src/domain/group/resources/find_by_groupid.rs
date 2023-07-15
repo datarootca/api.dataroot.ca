@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
-
 use crate::domain::{
     group::{model::GroupModel, repository::GroupRepository},
     error::DomainError,
@@ -9,7 +7,7 @@ use crate::domain::{
 
 pub async fn execute(
     group_repository: Arc<dyn GroupRepository>,
-    id: Uuid,
+    id: i32,
 ) -> Result<Option<GroupModel>, DomainError> {
     if let Some(group) = group_repository.find_by_groupid(&id).await? {
         return Ok(Some(group));
@@ -22,7 +20,7 @@ mod tests {
     use async_trait::async_trait;
     use mockall::mock;
 
-    use crate::domain::group::model::{GroupCreateModel, GroupUpdateModel};
+    use crate::{domain::group::model::{GroupCreateModel, GroupUpdateModel}, api::utils::random_number};
 
     use super::*;
 
@@ -32,10 +30,10 @@ mod tests {
         #[async_trait]
         impl GroupRepository for FakeGroupRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<GroupModel>, u32)>, DomainError>;
-            async fn find_by_groupid(&self, id: &Uuid) -> Result<Option<GroupModel>, DomainError>;
+            async fn find_by_groupid(&self, id: &i32) -> Result<Option<GroupModel>, DomainError>;
             async fn insert(&self,group_create_model: &GroupCreateModel) -> Result<GroupModel, DomainError>;
-            async fn update_by_groupid(&self,id: &Uuid,group_update_model: &GroupUpdateModel) -> Result<GroupModel, DomainError>;
-            async fn delete_by_groupid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_groupid(&self,id: &i32,group_update_model: &GroupUpdateModel) -> Result<GroupModel, DomainError>;
+            async fn delete_by_groupid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -47,7 +45,7 @@ mod tests {
             .expect_find_by_groupid()
             .return_once(|_| Ok(Some(GroupModel::mock_default())));
 
-        let result = execute(Arc::new(group_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(group_repository), random_number()).await;
 
         match result {
             Ok(_) => {}
@@ -63,7 +61,7 @@ mod tests {
             .expect_find_by_groupid()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(group_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(group_repository), random_number()).await;
 
         match result {
             Ok(result) => {

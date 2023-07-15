@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     path = "/state/{state_id}",
     tag = "state",
     params(
-        ("state_id" = Uuid, Path, description = "State uuid"),
+        ("state_id" = i32, Path, description = "State uuid"),
     ),
     request_body = RequestUpdateState,
     responses(
@@ -33,7 +33,7 @@ use crate::{
 #[put("/state/{state_id}")]
 async fn handler(
     state: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
     body: web::Json<dto::RequestUpdateState>,
 ) -> Result<HttpResponse, DomainError> {
     body.validate()?;
@@ -53,13 +53,13 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
         api::{
             resources::state::{dto, routes::init_routes},
             tests::utils::get_app,
-            utils::response::ApiResponse,
+            utils::{response::ApiResponse, random_number},
         },
         domain::state::{model::StateCreateModel, repository::StateRepository},
     };
@@ -70,7 +70,7 @@ mod tests {
 
         //Seed
         let state_model = StateCreateModel::mock_default();
-        repositories
+        let state = repositories
             .state_repository
             .insert(&state_model.clone())
             .await
@@ -79,7 +79,7 @@ mod tests {
         let mock_request_update_state =
             dto::RequestUpdateState::mock_default().with_name("Slovakia");
         let req = test::TestRequest::put()
-            .uri(&format!("/state/{}", state_model.stateid))
+            .uri(&format!("/state/{}", state.stateid))
             .set_json(mock_request_update_state.clone())
             .to_request();
         let res = test::call_service(&app, req).await;
@@ -101,7 +101,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::put()
-            .uri(&format!("/state/{}", Uuid::new_v4()))
+            .uri(&format!("/state/{}", random_number().to_string()))
             .set_json(dto::RequestUpdateState::mock_default().with_name("weapons update 3"))
             .to_request();
         let res = test::call_service(&app, req).await;

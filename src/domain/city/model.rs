@@ -1,15 +1,15 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_number;
 #[cfg(test)]
 use crate::api::utils::random_string;
 
 #[derive(Debug, Clone)]
 pub struct CityCreateModel {
-    pub cityid: Uuid,
     pub name: String,
     pub slug: String,
-    pub stateid: Uuid,
+    pub stateid: i32,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
     pub thumb_link: Option<String>,
@@ -19,14 +19,13 @@ impl CityCreateModel {
     pub fn new(
         name: String, 
         slug: String,
-        stateid: Uuid,
+        stateid: i32,
         extid: String,
         highres_link: Option<String>,
         photo_link: Option<String>,
         thumb_link:Option<String>,
     ) -> Self {
         Self {
-            cityid: Uuid::new_v4(),
             name,
             slug,
             stateid,
@@ -42,8 +41,7 @@ impl CityCreateModel {
 impl CityCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            stateid: Uuid::new_v4(),
-            cityid: Uuid::new_v4(),
+            stateid: random_number(),
             name: random_string(10),
             slug: random_string(10),
             extid: random_string(10),
@@ -58,7 +56,7 @@ impl CityCreateModel {
 pub struct CityUpdateModel {
     pub name: String,
     pub slug: String,
-    pub stateid: Uuid,
+    pub stateid: i32,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
     pub thumb_link: Option<String>,
@@ -67,7 +65,7 @@ impl CityUpdateModel {
     pub fn new(
         name: String, 
         slug: String,
-        stateid: Uuid,
+        stateid: i32,
         highres_link: Option<String>,
         photo_link: Option<String>,
         thumb_link:Option<String>,
@@ -91,17 +89,17 @@ impl CityUpdateModel {
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
-            stateid: Uuid::new_v4(),
+            stateid: random_number(),
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct CityModel {
-    pub cityid: Uuid,
+    pub cityid: i32,
     pub name: String,
     pub slug: String,
-    pub stateid: Uuid,
+    pub stateid: i32,
     pub extid: String,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
@@ -113,11 +111,11 @@ pub struct CityModel {
 impl CityModel {
     pub fn mock_default() -> Self {
         Self {
-            cityid: Uuid::new_v4(),
+            cityid: random_number(),
             name: random_string(10),
             slug: random_string(10),
             extid: random_string(10),
-            stateid: Uuid::new_v4(),
+            stateid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),

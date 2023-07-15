@@ -1,11 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
+
 use validator::Validate;
 
 #[cfg(test)]
-use crate::api::utils::random_string;
+use crate::api::utils::{
+    random_string,
+    random_number,
+};
 
 use crate::{
     api::utils::{validator::validate_page_size_max},
@@ -26,7 +29,7 @@ pub struct RequestCreateGroup {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     #[validate(length(max = 100))]
     pub organizer: String,
     #[validate(length(max = 512))]
@@ -68,7 +71,7 @@ impl RequestCreateGroup {
             active: true,
             private: true,
             members: 100,
-            cityid: uuid::Uuid::new_v4(),
+            cityid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -88,7 +91,7 @@ pub struct RequestUpdateGroup {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     #[validate(length(max = 100))]
     pub organizer: String,
     #[validate(length(max = 512))]
@@ -128,7 +131,7 @@ impl RequestUpdateGroup {
             active: true,
             private: true,
             members: 100,
-            cityid: uuid::Uuid::new_v4(),
+            cityid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -153,7 +156,7 @@ pub struct RequestFindGroup {
 #[cfg_attr(test, derive(Deserialize))]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseGroup {
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub name: String,
     pub description: String,
     pub slug: String,
@@ -161,7 +164,7 @@ pub struct ResponseGroup {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     pub organizer: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub highres_link: Option<String>,

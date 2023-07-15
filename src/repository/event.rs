@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
 
 use crate::domain::{
     event::{
@@ -69,9 +68,9 @@ const QUERY_FIND_EVENT_BY_ID: &str = "
         eventid = $1;";
 
 const QUERY_INSERT_EVENT: &str = "
-    insert into event(eventid,name,description,extid,location,groupid,in_person,time,duration,link,waitlist_count,is_online,yes_rsvp_count,fee,highres_link,photo_link,thumb_link,rsvp_limit)
+    insert into event(name,description,extid,location,groupid,in_person,time,duration,link,waitlist_count,is_online,yes_rsvp_count,fee,highres_link,photo_link,thumb_link,rsvp_limit)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
     returning
         eventid,
         name,
@@ -197,7 +196,7 @@ impl EventRepository for PgEventRepository {
         return Ok(None);
     }
 
-    async fn find_by_eventid(&self, id: &Uuid) -> Result<Option<EventModel>, DomainError> {
+    async fn find_by_eventid(&self, id: &i32) -> Result<Option<EventModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_EVENT_BY_ID).await?;
 
@@ -218,7 +217,6 @@ impl EventRepository for PgEventRepository {
             .query_one(
                 &stmt,
                 &[
-                    &event_create_model.eventid,
                     &event_create_model.name,
                     &event_create_model.description,
                     &event_create_model.extid,
@@ -245,7 +243,7 @@ impl EventRepository for PgEventRepository {
 
     async fn update_by_eventid(
         &self,
-        eventid: &Uuid,
+        eventid: &i32,
         event_update_model: &EventUpdateModel,
     ) -> Result<EventModel, DomainError> {
         let client = self.pool.get().await?;
@@ -279,7 +277,7 @@ impl EventRepository for PgEventRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_eventid(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_eventid(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_EVENT_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

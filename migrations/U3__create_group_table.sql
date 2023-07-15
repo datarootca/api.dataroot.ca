@@ -5,7 +5,7 @@ CREATE SEQUENCE IF NOT EXISTS group_groupid_seq;
 
 -- Table Definition
 CREATE TABLE "group" (
-    "groupid" uuid NOT NULL,
+    "groupid" SERIAL NOT NULL,
     "name" varchar NOT NULL,
     "description" varchar NOT NULL,
     "extid" varchar NOT NULL UNIQUE,
@@ -13,7 +13,7 @@ CREATE TABLE "group" (
     "active" bool NOT NULL,
     "private" bool NOT NULL,
     "members" int4 NOT NULL,
-    "cityid" uuid NOT NULL,
+    "cityid" INTEGER NOT NULL,
     "organizer" varchar NOT NULL,
     "highres_link" varchar,
     "photo_link" varchar,

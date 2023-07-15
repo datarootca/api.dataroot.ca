@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -106,7 +106,7 @@ pub struct RequestFindCategories {
 #[cfg_attr(test, derive(Deserialize))]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseState {
-    pub stateid: Uuid,
+    pub stateid: i32,
     pub name: String,
     pub symbol: String,
     pub extid: String,

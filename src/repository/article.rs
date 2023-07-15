@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
 
 use crate::domain::{
     article::{
@@ -57,9 +56,9 @@ const QUERY_FIND_ARTICLE_BY_ID: &str = "
         articleid = $1;";
 
 const QUERY_INSERT_ARTICLE: &str = "
-    insert into article(articleid,extid,name,description,time_m,source,link,author,highres_link,photo_link,thumb_link,publish_at)
+    insert into article(extid,name,description,time_m,source,link,author,highres_link,photo_link,thumb_link,publish_at)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
     returning
         articleid,
         extid,
@@ -167,7 +166,7 @@ impl ArticleRepository for PgArticleRepository {
         return Ok(None);
     }
 
-    async fn find_by_articleid(&self, id: &Uuid) -> Result<Option<ArticleModel>, DomainError> {
+    async fn find_by_articleid(&self, id: &i32) -> Result<Option<ArticleModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_ARTICLE_BY_ID).await?;
 
@@ -188,7 +187,6 @@ impl ArticleRepository for PgArticleRepository {
             .query_one(
                 &stmt,
                 &[
-                    &article_create_model.articleid,
                     &article_create_model.extid,
                     &article_create_model.name,
                     &article_create_model.description,
@@ -209,7 +207,7 @@ impl ArticleRepository for PgArticleRepository {
 
     async fn update_by_articleid(
         &self,
-        articleid: &Uuid,
+        articleid: &i32,
         article_update_model: &ArticleUpdateModel,
     ) -> Result<ArticleModel, DomainError> {
         let client = self.pool.get().await?;
@@ -237,7 +235,7 @@ impl ArticleRepository for PgArticleRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_articleid(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_articleid(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_ARTICLE_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

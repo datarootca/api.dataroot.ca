@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     path = "/article/{article_id}",
     tag = "article",
     params(
-        ("article_id" = Uuid, Path, description = "Article uuid"),
+        ("article_id" = i32, Path, description = "Article uuid"),
     ),
     request_body = RequestUpdateArticle,
     responses(
@@ -33,7 +33,7 @@ use crate::{
 #[put("/article/{article_id}")]
 async fn handler(
     state: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
     body: web::Json<dto::RequestUpdateArticle>,
 ) -> Result<HttpResponse, DomainError> {
     body.validate()?;
@@ -53,13 +53,13 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
         api::{
             resources::article::{dto, routes::init_routes},
             tests::utils::get_app,
-            utils::response::ApiResponse,
+            utils::{response::ApiResponse, random_number},
         },
         domain::article::{model::ArticleCreateModel, repository::ArticleRepository},
     };
@@ -70,7 +70,7 @@ mod tests {
 
         //Seed
         let article_model = ArticleCreateModel::mock_default();
-        repositories
+        let aritcle = repositories
             .article_repository
             .insert(&article_model.clone())
             .await
@@ -79,7 +79,7 @@ mod tests {
         let mock_request_update_article =
             dto::RequestUpdateArticle::mock_default().with_name("Burgers Supreme");
         let req = test::TestRequest::put()
-            .uri(&format!("/article/{}", article_model.articleid))
+            .uri(&format!("/article/{}", aritcle.articleid))
             .set_json(mock_request_update_article.clone())
             .to_request();
         let res = test::call_service(&app, req).await;
@@ -101,7 +101,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::put()
-            .uri(&format!("/article/{}", Uuid::new_v4()))
+            .uri(&format!("/article/{}", random_number().to_string()))
             .set_json(dto::RequestUpdateArticle::mock_default().with_name("weapons update 3"))
             .to_request();
         let res = test::call_service(&app, req).await;

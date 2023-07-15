@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 
 use crate::{
     api::lib::AppState,
@@ -16,7 +16,7 @@ use crate::{
     path = "/state/{state_id}",
     tag = "state",
     params(
-        ("state_id" = Uuid, Path, description = "state uuid"),
+        ("state_id" = i32, Path, description = "state uuid"),
     ),
     responses(
          (status = 204, description = "state deleted"),
@@ -28,7 +28,7 @@ use crate::{
 #[delete("/state/{state_id}")]
 async fn handler(
     state: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
 ) -> Result<HttpResponse, DomainError> {
     state::resources::delete_by_stateid::execute(
         state.state_repository.clone(),
@@ -41,10 +41,10 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
-        api::{resources::state::routes::init_routes, tests::utils::get_app},
+        api::{resources::state::routes::init_routes, tests::utils::get_app, utils::random_number},
         domain::state::{model::StateCreateModel, repository::StateRepository},
     };
 
@@ -54,14 +54,14 @@ mod tests {
 
         //Seed
         let state_model = StateCreateModel::mock_default();
-        repositories
+        let state = repositories
             .state_repository
             .insert(&state_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::delete()
-            .uri(&format!("/state/{}", state_model.stateid))
+            .uri(&format!("/state/{}", state.stateid))
             .to_request();
         let res = test::call_service(&app, req).await;
 
@@ -73,7 +73,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::delete()
-            .uri(&format!("/state/{}", Uuid::new_v4()))
+            .uri(&format!("/state/{}", random_number().to_string()))
             .to_request();
         let res = test::call_service(&app, req).await;
 

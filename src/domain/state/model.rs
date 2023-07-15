@@ -1,12 +1,12 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_number;
 #[cfg(test)]
 use crate::api::utils::random_string;
 
 #[derive(Debug, Clone)]
 pub struct StateCreateModel {
-    pub stateid: Uuid,
     pub name: String,
     pub symbol: String,
     pub extid: String,
@@ -24,7 +24,6 @@ impl StateCreateModel {
         thumb_link: Option<String>,
     ) -> Self {
         Self {
-            stateid: Uuid::new_v4(),
             extid,
             name,
             symbol,
@@ -39,7 +38,6 @@ impl StateCreateModel {
 impl StateCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            stateid: uuid::Uuid::new_v4(),
             name: random_string(10),
             symbol: random_string(2),
             extid: random_string(10),
@@ -90,7 +88,7 @@ impl StateUpdateModel {
 
 #[derive(Debug, Clone)]
 pub struct StateModel {
-    pub stateid: Uuid,
+    pub stateid: i32,
     pub name: String,
     pub symbol: String,
     pub extid: String,
@@ -104,7 +102,7 @@ pub struct StateModel {
 impl StateModel {
     pub fn mock_default() -> Self {
         Self {
-            stateid: uuid::Uuid::new_v4(),
+            stateid: random_number(),
             name: random_string(10),
             symbol: random_string(2),
             extid: random_string(10),

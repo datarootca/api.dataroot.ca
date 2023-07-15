@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 
 use crate::{
     api::{
@@ -18,7 +18,7 @@ use crate::{
     path = "/group/{group_id}",
     tag = "group",
     params(
-        ("group_id" = Uuid, Path, description = "Group uuid"),
+        ("group_id" = i32, Path, description = "Group uuid"),
     ),
     responses(
          (status = 200, description = "Group finded",  body = ApiResponseGroup),
@@ -28,7 +28,7 @@ use crate::{
 #[get("/group/{group_id}")]
 async fn handler(
     group: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
 ) -> Result<HttpResponse, DomainError> {
     let result = group::resources::find_by_groupid::execute(
         group.group_repository.clone(),
@@ -49,10 +49,10 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
-        api::{resources::group::routes::init_routes, tests::utils::get_app},
+        api::{resources::group::routes::init_routes, tests::utils::get_app, utils::random_number},
         domain::group::{model::GroupCreateModel, repository::GroupRepository},
     };
 
@@ -62,14 +62,14 @@ mod tests {
 
         //Seed
         let group_model = GroupCreateModel::mock_default();
-        repositories
+        let group = repositories
             .group_repository
             .insert(&group_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
-            .uri(&format!("/group/{}", group_model.groupid))
+            .uri(&format!("/group/{}", group.groupid))
             .to_request();
         let res = test::call_service(&app, req).await;
 
@@ -81,7 +81,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::get()
-            .uri(&format!("/group/{}", Uuid::new_v4()))
+            .uri(&format!("/group/{}", random_number().to_string()))
             .to_request();
         let res = test::call_service(&app, req).await;
 

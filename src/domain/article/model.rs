@@ -1,12 +1,14 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+
 
 #[cfg(test)]
-use crate::api::utils::random_string;
+use crate::api::utils::{
+    random_string,
+    random_number,
+};
 
 #[derive(Debug, Clone)]
 pub struct ArticleCreateModel {
-    pub articleid: Uuid,
     pub extid: String,
     pub name: String,
     pub description: Option<String>,
@@ -34,7 +36,6 @@ impl ArticleCreateModel {
         thumb_link: Option<String>,
     ) -> Self {
         Self {
-            articleid: Uuid::new_v4(),
             name,
             description,
             extid,
@@ -54,7 +55,6 @@ impl ArticleCreateModel {
 impl ArticleCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            articleid: uuid::Uuid::new_v4(),
             extid: random_string(10),
             name: "article".to_string(),
             link: random_string(10),
@@ -130,7 +130,7 @@ impl ArticleUpdateModel {
 
 #[derive(Debug, Clone)]
 pub struct ArticleModel {
-    pub articleid: Uuid,
+    pub articleid: i32,
     pub extid: String,
     pub name: String,
     pub description: Option<String>,
@@ -149,7 +149,7 @@ pub struct ArticleModel {
 impl ArticleModel {
     pub fn mock_default() -> Self {
         Self {
-            articleid: uuid::Uuid::new_v4(),
+            articleid: random_number(),
             extid: random_string(10),
             name: "article".to_string(),
             description: Some("The famous article".to_string()),

@@ -4,8 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
-
 use crate::domain::{
     state::{
         model::{StateCreateModel, StateModel, StateUpdateModel},
@@ -47,9 +45,9 @@ const QUERY_FIND_STATE_BY_ID: &str = "
         stateid = $1;";
 
 const QUERY_INSERT_STATE: &str = "
-    insert into state(stateid,name,symbol,extid,highres_link,photo_link,thumb_link)
+    insert into state(name,symbol,extid,highres_link,photo_link,thumb_link)
     values
-        ($1,$2,$3,$4,$5,$6,$7)
+        ($1,$2,$3,$4,$5,$6)
     returning
         stateid,
         name,
@@ -142,7 +140,7 @@ impl StateRepository for PgStateRepository {
         return Ok(None);
     }
 
-    async fn find_by_stateid(&self, id: &Uuid) -> Result<Option<StateModel>, DomainError> {
+    async fn find_by_stateid(&self, id: &i32) -> Result<Option<StateModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_STATE_BY_ID).await?;
 
@@ -163,7 +161,6 @@ impl StateRepository for PgStateRepository {
             .query_one(
                 &stmt,
                 &[
-                    &state_create_model.stateid,
                     &state_create_model.name,
                     &state_create_model.symbol,
                     &state_create_model.extid,
@@ -179,7 +176,7 @@ impl StateRepository for PgStateRepository {
 
     async fn update_by_stateid(
         &self,
-        stateid: &Uuid,
+        stateid: &i32,
         state_update_model: &StateUpdateModel,
     ) -> Result<StateModel, DomainError> {
         let client = self.pool.get().await?;
@@ -202,7 +199,7 @@ impl StateRepository for PgStateRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_stateid(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_stateid(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_STATE_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

@@ -1,6 +1,6 @@
 -- Table Definition
 CREATE TABLE "public"."organizer" (
-    "organizerid" uuid NOT NULL,
+    "organizerid" SERIAL NOT NULL,
     "firstname" varchar NOT NULL,
     "lastname" varchar NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT now(),

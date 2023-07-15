@@ -1,11 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
+
 use validator::Validate;
 
 #[cfg(test)]
-use crate::api::utils::random_string;
+use crate::api::utils::{
+    random_string,
+    random_number,
+};
 
 use crate::{
     api::utils::{validator::validate_page_size_max},
@@ -23,7 +26,7 @@ pub struct RequestCreateEvent {
     pub location: String,
     #[validate(length(max = 64))]
     pub extid: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,
@@ -71,7 +74,7 @@ impl RequestCreateEvent {
             name: "Event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
-            groupid: uuid::Uuid::new_v4(),
+            groupid: random_number(),
             extid: random_string(10),
             in_person: true,
             is_online: true,
@@ -98,7 +101,7 @@ pub struct RequestUpdateEvent {
     pub description: String,
     #[validate(length(max = 64))]
     pub location: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,
@@ -145,7 +148,7 @@ impl RequestUpdateEvent {
             name: "Event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
-            groupid: uuid::Uuid::new_v4(),
+            groupid: random_number(),
             in_person: true,
             is_online: true,
             time: DateTime::default(),
@@ -179,12 +182,12 @@ pub struct RequestFindEvent {
 #[cfg_attr(test, derive(Deserialize))]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseEvent {
-    pub eventid: Uuid,
+    pub eventid: i32,
     pub name: String,
     pub description: String,
     pub location: String,
     pub extid: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,

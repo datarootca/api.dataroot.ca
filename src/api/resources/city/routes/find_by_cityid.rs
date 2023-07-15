@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 
 use crate::{
     api::{
@@ -18,7 +18,7 @@ use crate::{
     path = "/city/{city_id}",
     tag = "city",
     params(
-        ("city_id" = Uuid, Path, description = "City uuid"),
+        ("city_id" = i32, Path, description = "City uuid"),
     ),
     responses(
          (status = 200, description = "City finded",  body = ApiResponseCity),
@@ -28,7 +28,7 @@ use crate::{
 #[get("/city/{city_id}")]
 async fn handler(
     city: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
 ) -> Result<HttpResponse, DomainError> {
     let result = city::resources::find_by_cityid::execute(
         city.city_repository.clone(),
@@ -49,10 +49,10 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
-        api::{resources::city::routes::init_routes, tests::utils::get_app},
+        api::{resources::city::routes::init_routes, tests::utils::get_app, utils::random_number},
         domain::city::{model::CityCreateModel, repository::CityRepository},
     };
 
@@ -62,14 +62,14 @@ mod tests {
 
         //Seed
         let city_model = CityCreateModel::mock_default();
-        repositories
+        let city = repositories
             .city_repository
             .insert(&city_model.clone())
             .await
             .unwrap();
 
         let req = test::TestRequest::get()
-            .uri(&format!("/city/{}", city_model.cityid))
+            .uri(&format!("/city/{}", city.cityid))
             .to_request();
         let res = test::call_service(&app, req).await;
 
@@ -81,7 +81,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::get()
-            .uri(&format!("/city/{}", Uuid::new_v4()))
+            .uri(&format!("/city/{}", random_number().to_string()))
             .to_request();
         let res = test::call_service(&app, req).await;
 

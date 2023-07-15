@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     city::{
@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub async fn execute(
     city_repository: Arc<dyn CityRepository>,
-    id: Uuid,
+    id: i32,
     city_update_model: CityUpdateModel,
 ) -> Result<CityModel, DomainError> {
     let has_category = city_repository.find_by_cityid(&id).await?;
@@ -29,7 +29,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::city::model::CityCreateModel;
+    use crate::{domain::city::model::CityCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod tests {
         #[async_trait]
         impl CityRepository for FakeCityRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<CityModel>, u32)>, DomainError>;
-            async fn find_by_cityid(&self, id: &Uuid) -> Result<Option<CityModel>, DomainError>;
+            async fn find_by_cityid(&self, id: &i32) -> Result<Option<CityModel>, DomainError>;
             async fn insert(&self,city_create_model: &CityCreateModel) -> Result<CityModel, DomainError>;
-            async fn update_by_cityid(&self,id: &Uuid,city_update_model: &CityUpdateModel) -> Result<CityModel, DomainError>;
-            async fn delete_by_cityid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_cityid(&self,id: &i32,city_update_model: &CityUpdateModel) -> Result<CityModel, DomainError>;
+            async fn delete_by_cityid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +67,13 @@ mod tests {
 
         let response = execute(
             Arc::new(city_repository),
-            Uuid::new_v4(),
+            random_number(),
             mock_request_city_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.cityid.is_nil());
+        assert!(response.cityid != 0);
     }
 
     #[tokio::test]
@@ -85,7 +85,7 @@ mod tests {
 
         let result = execute(
             Arc::new(city_repository),
-            Uuid::new_v4(),
+            random_number(),
             CityUpdateModel::mock_default(),
         )
         .await;

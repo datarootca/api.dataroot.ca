@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
-
 use crate::domain::{
     state::{
         model::{StateModel, StateUpdateModel},
@@ -12,7 +10,7 @@ use crate::domain::{
 
 pub async fn execute(
     state_repository: Arc<dyn StateRepository>,
-    id: Uuid,
+    id: i32,
     state_update_model: StateUpdateModel,
 ) -> Result<StateModel, DomainError> {
     let has_state = state_repository.find_by_stateid(&id).await?;
@@ -29,7 +27,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::state::model::StateCreateModel;
+    use crate::{domain::state::model::StateCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +40,10 @@ mod tests {
         #[async_trait]
         impl StateRepository for FakeStateRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<StateModel>, u32)>, DomainError>;
-            async fn find_by_stateid(&self, id: &Uuid) -> Result<Option<StateModel>, DomainError>;
+            async fn find_by_stateid(&self, id: &i32) -> Result<Option<StateModel>, DomainError>;
             async fn insert(&self,state_create_model: &StateCreateModel) -> Result<StateModel, DomainError>;
-            async fn update_by_stateid(&self,id: &Uuid,state_update_model: &StateUpdateModel) -> Result<StateModel, DomainError>;
-            async fn delete_by_stateid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_stateid(&self,id: &i32,state_update_model: &StateUpdateModel) -> Result<StateModel, DomainError>;
+            async fn delete_by_stateid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +65,13 @@ mod tests {
 
         let response = execute(
             Arc::new(state_repository),
-            Uuid::new_v4(),
+            random_number().to_owned(),
             mock_request_state_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.stateid.is_nil());
+        assert!(response.stateid != 0);
     }
 
     #[tokio::test]
@@ -85,7 +83,7 @@ mod tests {
 
         let result = execute(
             Arc::new(state_repository),
-            Uuid::new_v4(),
+            random_number().to_owned(),
             StateUpdateModel::mock_default(),
         )
         .await;

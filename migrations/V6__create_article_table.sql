@@ -1,6 +1,6 @@
 
 CREATE TABLE "article" (
-    "articleid" uuid NOT NULL,
+    "articleid" SERIAL NOT NULL,
     "extid" varchar NOT NULL UNIQUE,
     "name" varchar NOT NULL,
     "description" varchar NOT NULL,

@@ -1,16 +1,16 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+
+#[cfg(test)]
+use crate::api::utils::random_number;
 
 #[derive(Debug, Clone)]
 pub struct CategoryCreateModel {
-    pub id: Uuid,
     pub name: String,
     pub description: Option<String>,
 }
 impl CategoryCreateModel {
     pub fn new(name: String, description: Option<String>) -> Self {
         Self {
-            id: Uuid::new_v4(),
             name,
             description,
         }
@@ -21,7 +21,6 @@ impl CategoryCreateModel {
 impl CategoryCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            id: uuid::Uuid::new_v4(),
             name: "Burgers".to_string(),
             description: Some("The Big Burgers".to_string()),
         }
@@ -53,7 +52,7 @@ impl CategoryUpdateModel {
 
 #[derive(Debug, Clone)]
 pub struct CategoryModel {
-    pub id: Uuid,
+    pub id: i32,
     pub name: String,
     pub description: Option<String>,
     pub is_active: bool,
@@ -64,7 +63,7 @@ pub struct CategoryModel {
 impl CategoryModel {
     pub fn mock_default() -> Self {
         Self {
-            id: uuid::Uuid::new_v4(),
+            id: random_number(),
             name: "Burgers".to_string(),
             description: Some("The Big Burgers".to_string()),
             is_active: true,

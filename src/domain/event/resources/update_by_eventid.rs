@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     event::{
@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub async fn execute(
     event_repository: Arc<dyn EventRepository>,
-    id: Uuid,
+    id: i32,
     event_update_model: EventUpdateModel,
 ) -> Result<EventModel, DomainError> {
     let has_event = event_repository.find_by_eventid(&id).await?;
@@ -29,7 +29,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::event::model::EventCreateModel;
+    use crate::{domain::event::model::EventCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod tests {
         #[async_trait]
         impl EventRepository for FakeEventRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<EventModel>, u32)>, DomainError>;
-            async fn find_by_eventid(&self, id: &Uuid) -> Result<Option<EventModel>, DomainError>;
+            async fn find_by_eventid(&self, id: &i32) -> Result<Option<EventModel>, DomainError>;
             async fn insert(&self,event_create_model: &EventCreateModel) -> Result<EventModel, DomainError>;
-            async fn update_by_eventid(&self,id: &Uuid,event_update_model: &EventUpdateModel) -> Result<EventModel, DomainError>;
-            async fn delete_by_eventid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_eventid(&self,id: &i32,event_update_model: &EventUpdateModel) -> Result<EventModel, DomainError>;
+            async fn delete_by_eventid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +67,13 @@ mod tests {
 
         let response = execute(
             Arc::new(event_repository),
-            Uuid::new_v4(),
+            random_number(),
             mock_request_event_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.eventid.is_nil());
+        assert!(response.eventid != 0);
     }
 
     #[tokio::test]
@@ -85,7 +85,7 @@ mod tests {
 
         let result = execute(
             Arc::new(event_repository),
-            Uuid::new_v4(),
+            random_number(),
             EventUpdateModel::mock_default(),
         )
         .await;

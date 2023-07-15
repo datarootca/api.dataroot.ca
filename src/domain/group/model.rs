@@ -1,8 +1,9 @@
 #[cfg(test)]
+use crate::api::utils::random_number;
+#[cfg(test)]
 use crate::api::utils::random_string;
 
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
 #[derive(Debug, Clone)]
 pub struct ImageLinks {
     pub highres_link: Option<String>,
@@ -11,7 +12,6 @@ pub struct ImageLinks {
 }
 #[derive(Debug, Clone)]
 pub struct GroupCreateModel {
-    pub groupid: Uuid,
     pub name: String,
     pub description: String,
     pub slug: String,
@@ -19,7 +19,7 @@ pub struct GroupCreateModel {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     pub organizer: String,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
@@ -34,12 +34,11 @@ impl GroupCreateModel {
         active: bool,
         private: bool,
         members: i32,
-        cityid: Uuid,
+        cityid: i32,
         organizer: String,
         image: ImageLinks,
     ) -> Self {
         Self {
-            groupid: Uuid::new_v4(),
             extid,
             name,
             description,
@@ -60,7 +59,6 @@ impl GroupCreateModel {
 impl GroupCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            groupid: uuid::Uuid::new_v4(),
             name: random_string(10),
             description: "The Big Group".to_string(),
             extid: random_string(10),
@@ -69,7 +67,7 @@ impl GroupCreateModel {
             active: false,
             private: true,
             members: 100,
-            cityid: uuid::Uuid::new_v4(),
+            cityid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -85,7 +83,7 @@ pub struct GroupUpdateModel {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     pub organizer: String,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
@@ -102,7 +100,7 @@ impl GroupUpdateModel {
         active: bool,
         private: bool,
         members: i32,
-        cityid: Uuid,
+        cityid: i32,
         organizer: String,
         image: ImageLinks,
     ) -> Self {
@@ -132,7 +130,7 @@ impl GroupUpdateModel {
             active: true,
             private: true,
             members: 100,
-            cityid: uuid::Uuid::new_v4(),
+            cityid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -142,7 +140,7 @@ impl GroupUpdateModel {
 
 #[derive(Debug, Clone)]
 pub struct GroupModel {
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub name: String,
     pub description: String,
     pub slug: String,
@@ -150,7 +148,7 @@ pub struct GroupModel {
     pub active: bool,
     pub private: bool,
     pub members: i32,
-    pub cityid: Uuid,
+    pub cityid: i32,
     pub organizer: String,
     pub highres_link: Option<String>,
     pub photo_link: Option<String>,
@@ -163,7 +161,7 @@ pub struct GroupModel {
 impl GroupModel {
     pub fn mock_default() -> Self {
         Self {
-            groupid: uuid::Uuid::new_v4(),
+            groupid: random_number(),
             name: random_string(10),
             description: "The Big Group".to_string(),
             extid: random_string(10),
@@ -172,7 +170,7 @@ impl GroupModel {
             active: true,
             private: true,
             members: 100,
-            cityid: uuid::Uuid::new_v4(),
+            cityid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),

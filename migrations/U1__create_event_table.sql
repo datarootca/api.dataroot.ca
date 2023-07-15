@@ -1,11 +1,11 @@
 -- Table Definition
 CREATE TABLE "event" (
-    "eventid" uuid NOT NULL,
+    "eventid" SERIAL NOT NULL,
     "name" varchar NOT NULL,
     "description" varchar,
     "extid" varchar NOT NULL UNIQUE,
     "location" varchar NOT NULL,
-    "groupid" uuid NOT NULL,
+    "groupid" INTEGER NOT NULL,
     "in_person" bool NOT NULL,
     "time" timestamptz NOT NULL,
     "duration" int4 NOT NULL,

@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 
 use tokio_postgres::{types::ToSql, Row};
-use uuid::Uuid;
 
 use crate::domain::{
     city::{
@@ -49,9 +48,9 @@ const QUERY_FIND_CITY_BY_ID: &str = "
         cityid = $1;";
 
 const QUERY_INSERT_CITY: &str = "
-    insert into city(cityid,stateid,name,slug,extid,highres_link,photo_link,thumb_link)
+    insert into city(stateid,name,slug,extid,highres_link,photo_link,thumb_link)
     values
-        ($1,$2,$3,$4,$5,$6,$7,$8)
+        ($1,$2,$3,$4,$5,$6,$7)
     returning
         cityid,
         stateid,
@@ -147,7 +146,7 @@ impl CityRepository for PgCityRepository {
         return Ok(None);
     }
 
-    async fn find_by_cityid(&self, id: &Uuid) -> Result<Option<CityModel>, DomainError> {
+    async fn find_by_cityid(&self, id: &i32) -> Result<Option<CityModel>, DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_FIND_CITY_BY_ID).await?;
 
@@ -168,7 +167,6 @@ impl CityRepository for PgCityRepository {
             .query_one(
                 &stmt,
                 &[
-                    &city_create_model.cityid,
                     &city_create_model.stateid,
                     &city_create_model.name,
                     &city_create_model.slug,
@@ -185,7 +183,7 @@ impl CityRepository for PgCityRepository {
 
     async fn update_by_cityid(
         &self,
-        cityid: &Uuid,
+        cityid: &i32,
         city_update_model: &CityUpdateModel,
     ) -> Result<CityModel, DomainError> {
         let client = self.pool.get().await?;
@@ -209,7 +207,7 @@ impl CityRepository for PgCityRepository {
         Ok(result.into())
     }
 
-    async fn delete_by_cityid(&self, id: &Uuid) -> Result<(), DomainError> {
+    async fn delete_by_cityid(&self, id: &i32) -> Result<(), DomainError> {
         let client = self.pool.get().await?;
         let stmt = client.prepare(QUERY_DELETE_CITY_BY_ID).await?;
         client.execute(&stmt, &[id]).await?;

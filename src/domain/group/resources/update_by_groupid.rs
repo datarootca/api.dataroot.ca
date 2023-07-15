@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{
     group::{
@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub async fn execute(
     group_repository: Arc<dyn GroupRepository>,
-    id: Uuid,
+    id: i32,
     group_update_model: GroupUpdateModel,
 ) -> Result<GroupModel, DomainError> {
     let has_group = group_repository.find_by_groupid(&id).await?;
@@ -29,7 +29,7 @@ pub async fn execute(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::group::model::GroupCreateModel;
+    use crate::{domain::group::model::GroupCreateModel, api::utils::random_number};
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod tests {
         #[async_trait]
         impl GroupRepository for FakeGroupRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<GroupModel>, u32)>, DomainError>;
-            async fn find_by_groupid(&self, id: &Uuid) -> Result<Option<GroupModel>, DomainError>;
+            async fn find_by_groupid(&self, id: &i32) -> Result<Option<GroupModel>, DomainError>;
             async fn insert(&self,group_create_model: &GroupCreateModel) -> Result<GroupModel, DomainError>;
-            async fn update_by_groupid(&self,id: &Uuid,group_update_model: &GroupUpdateModel) -> Result<GroupModel, DomainError>;
-            async fn delete_by_groupid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_groupid(&self,id: &i32,group_update_model: &GroupUpdateModel) -> Result<GroupModel, DomainError>;
+            async fn delete_by_groupid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -67,13 +67,13 @@ mod tests {
 
         let response = execute(
             Arc::new(group_repository),
-            Uuid::new_v4(),
+            random_number().to_owned(),
             mock_request_group_update,
         )
         .await
         .unwrap();
 
-        assert!(!response.groupid.is_nil());
+        assert!(response.groupid != 0);
     }
 
     #[tokio::test]
@@ -85,7 +85,7 @@ mod tests {
 
         let result = execute(
             Arc::new(group_repository),
-            Uuid::new_v4(),
+            random_number(),
             GroupUpdateModel::mock_default(),
         )
         .await;

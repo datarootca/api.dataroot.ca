@@ -1,11 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
+
 use validator::Validate;
 
 #[cfg(test)]
-use crate::api::utils::random_string;
+use crate::api::utils::{
+    random_string,
+    random_number,
+};
 
 use crate::{
     api::utils::{validator::validate_page_size_max},
@@ -19,7 +22,7 @@ pub struct RequestCreateCity {
     pub name: String,
     #[validate(length(max = 64))]
     pub extid: String,
-    pub stateid: Uuid,
+    pub stateid: i32,
     #[validate(length(max = 64))]
     pub slug: String,
     #[validate(length(max = 512))]
@@ -49,7 +52,7 @@ impl RequestCreateCity {
             name: random_string(10),
             slug: random_string(10),
             extid: random_string(10),
-            stateid: uuid::Uuid::new_v4(),
+            stateid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -62,7 +65,7 @@ impl RequestCreateCity {
 pub struct RequestUpdateCity {
     #[validate(length(max = 64))]
     pub name: String,
-    pub stateid: Uuid,
+    pub stateid: i32,
     #[validate(length(max = 64))]
     pub slug: String,
     #[validate(length(max = 512))]
@@ -90,7 +93,7 @@ impl RequestUpdateCity {
         Self {
             name: random_string(20),
             slug: random_string(2),
-            stateid: uuid::Uuid::new_v4(),
+            stateid: random_number(),
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
@@ -115,8 +118,8 @@ pub struct RequestFindCategories {
 #[cfg_attr(test, derive(Deserialize))]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseCity {
-    pub cityid: Uuid,
-    pub stateid: Uuid,
+    pub cityid: i32,
+    pub stateid: i32,
     pub name: String,
     pub slug: String,
     pub extid: String,

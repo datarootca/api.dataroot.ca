@@ -1,17 +1,17 @@
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
 
+#[cfg(test)]
+use crate::api::utils::random_number;
 #[cfg(test)]
 use crate::api::utils::random_string;
 
 #[derive(Debug, Clone)]
 pub struct EventCreateModel {
-    pub eventid: Uuid,
     pub name: String,
     pub description: String,
     pub location: String,
     pub extid: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,
@@ -30,7 +30,7 @@ impl EventCreateModel {
         name: String, 
         description: String,
         location: String,
-        groupid: Uuid,
+        groupid: i32,
         extid: String,
         link: String,
         in_person: bool,
@@ -46,7 +46,6 @@ impl EventCreateModel {
         thumb_link: Option<String>,
     ) -> Self {
         Self {
-            eventid: uuid::Uuid::new_v4(),
             name,
             description,
             location, 
@@ -72,11 +71,10 @@ impl EventCreateModel {
 impl EventCreateModel {
     pub fn mock_default() -> Self {
         Self {
-            eventid: uuid::Uuid::new_v4(),
             name: "event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
-            groupid: uuid::Uuid::new_v4(),
+            groupid: random_number(),
             extid: random_string(10),
             in_person: true,
             is_online: true,
@@ -99,7 +97,7 @@ pub struct EventUpdateModel {
     pub name: String,
     pub description: String,
     pub location: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,
@@ -118,7 +116,7 @@ impl EventUpdateModel {
         name: String, 
         description: String,
         location: String,
-        groupid: Uuid,
+        groupid: i32,
         link: String,
         in_person: bool,
         is_online: bool,
@@ -159,7 +157,7 @@ impl EventUpdateModel {
             name: "Event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),
-            groupid: uuid::Uuid::new_v4(),
+            groupid: random_number(),
             in_person: true,
             is_online: true,
             time: DateTime::default(),
@@ -178,12 +176,12 @@ impl EventUpdateModel {
 
 #[derive(Debug, Clone)]
 pub struct EventModel {
-    pub eventid: Uuid,
+    pub eventid: i32,
     pub name: String,
     pub description: String,
     pub location: String,
     pub extid: String,
-    pub groupid: Uuid,
+    pub groupid: i32,
     pub in_person: bool,
     pub is_online: bool,
     pub time: DateTime<Utc>,
@@ -203,8 +201,8 @@ pub struct EventModel {
 impl EventModel {
     pub fn mock_default() -> Self {
         Self {
-            eventid: uuid::Uuid::new_v4(),
-            groupid: uuid::Uuid::new_v4(),
+            eventid: random_number(),
+            groupid: random_number(),
             name: "Event".to_string(),
             description: "The Big Event".to_string(),
             location: "boulvar".to_string(),

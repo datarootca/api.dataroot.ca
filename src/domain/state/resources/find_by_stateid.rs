@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
-
 use crate::domain::{
     state::{model::StateModel, repository::StateRepository},
     error::DomainError,
@@ -9,7 +7,7 @@ use crate::domain::{
 
 pub async fn execute(
     state_repository: Arc<dyn StateRepository>,
-    id: Uuid,
+    id: i32,
 ) -> Result<Option<StateModel>, DomainError> {
     if let Some(state) = state_repository.find_by_stateid(&id).await? {
         return Ok(Some(state));
@@ -22,7 +20,7 @@ mod tests {
     use async_trait::async_trait;
     use mockall::mock;
 
-    use crate::domain::state::model::{StateCreateModel, StateUpdateModel};
+    use crate::{domain::state::model::{StateCreateModel, StateUpdateModel}, api::utils::random_number};
 
     use super::*;
 
@@ -32,10 +30,10 @@ mod tests {
         #[async_trait]
         impl StateRepository for FakeStateRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<StateModel>, u32)>, DomainError>;
-            async fn find_by_stateid(&self, id: &Uuid) -> Result<Option<StateModel>, DomainError>;
+            async fn find_by_stateid(&self, id: &i32) -> Result<Option<StateModel>, DomainError>;
             async fn insert(&self,state_create_model: &StateCreateModel) -> Result<StateModel, DomainError>;
-            async fn update_by_stateid(&self,id: &Uuid,state_update_model: &StateUpdateModel) -> Result<StateModel, DomainError>;
-            async fn delete_by_stateid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_stateid(&self,id: &i32,state_update_model: &StateUpdateModel) -> Result<StateModel, DomainError>;
+            async fn delete_by_stateid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -47,7 +45,7 @@ mod tests {
             .expect_find_by_stateid()
             .return_once(|_| Ok(Some(StateModel::mock_default())));
 
-        let result = execute(Arc::new(state_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(state_repository), random_number()).await;
 
         match result {
             Ok(_) => {}
@@ -63,7 +61,7 @@ mod tests {
             .expect_find_by_stateid()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(state_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(state_repository), random_number()).await;
 
         match result {
             Ok(result) => {

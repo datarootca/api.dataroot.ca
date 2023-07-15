@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use uuid::Uuid;
+
 
 use crate::domain::{article::repository::ArticleRepository, error::DomainError};
 
 pub async fn execute(
     article_repository: Arc<dyn ArticleRepository>,
-    article_id: Uuid,
+    article_id: i32,
 ) -> Result<(), DomainError> {
     let has_article = article_repository.find_by_articleid(&article_id).await?;
     if has_article.is_none() {
@@ -22,11 +22,11 @@ pub async fn execute(
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
-    use uuid::Uuid;
+    
 
-    use crate::domain::article::model::{
+    use crate::{domain::article::model::{
         ArticleCreateModel, ArticleModel, ArticleUpdateModel,
-    };
+    }, api::utils::random_number};
 
     use super::*;
 
@@ -36,10 +36,10 @@ mod tests {
         #[async_trait]
         impl ArticleRepository for FakeArticleRepository {
             async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<ArticleModel>, u32)>, DomainError>;
-            async fn find_by_articleid(&self, id: &Uuid) -> Result<Option<ArticleModel>, DomainError>;
+            async fn find_by_articleid(&self, id: &i32) -> Result<Option<ArticleModel>, DomainError>;
             async fn insert(&self,article_create_model: &ArticleCreateModel) -> Result<ArticleModel, DomainError>;
-            async fn update_by_articleid(&self,id: &Uuid,article_update_model: &ArticleUpdateModel) -> Result<ArticleModel, DomainError>;
-            async fn delete_by_articleid(&self, id: &Uuid) -> Result<(), DomainError>;
+            async fn update_by_articleid(&self,id: &i32,article_update_model: &ArticleUpdateModel) -> Result<ArticleModel, DomainError>;
+            async fn delete_by_articleid(&self, id: &i32) -> Result<(), DomainError>;
         }
     }
 
@@ -55,7 +55,7 @@ mod tests {
             .expect_delete_by_articleid()
             .return_once(|_| Ok(()));
 
-        let result = execute(Arc::new(article_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(article_repository), random_number()).await;
 
         match result {
             Ok(()) => {}
@@ -71,7 +71,7 @@ mod tests {
             .expect_find_by_articleid()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(article_repository), Uuid::new_v4()).await;
+        let result = execute(Arc::new(article_repository), random_number()).await;
 
         match result {
             Err(DomainError::NotFound(_)) => {}

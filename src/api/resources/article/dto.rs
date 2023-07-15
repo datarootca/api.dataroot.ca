@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -145,7 +145,7 @@ pub struct RequestFindArticle {
 #[cfg_attr(test, derive(Deserialize))]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct ResponseArticle {
-    pub articleid: Uuid,
+    pub articleid: i32,
     pub extid: String,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]

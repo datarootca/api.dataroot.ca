@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, Data},
     HttpResponse,
 };
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     path = "/city/{city_id}",
     tag = "city",
     params(
-        ("city_id" = Uuid, Path, description = "City uuid"),
+        ("city_id" = i32, Path, description = "City uuid"),
     ),
     request_body = RequestUpdateCity,
     responses(
@@ -33,7 +33,7 @@ use crate::{
 #[put("/city/{city_id}")]
 async fn handler(
     city: Data<AppState>,
-    param: web::Path<Uuid>,
+    param: web::Path<i32>,
     body: web::Json<dto::RequestUpdateCity>,
 ) -> Result<HttpResponse, DomainError> {
     body.validate()?;
@@ -53,13 +53,13 @@ async fn handler(
 #[cfg(test)]
 mod tests {
     use actix_web::{http::StatusCode, test};
-    use uuid::Uuid;
+    
 
     use crate::{
         api::{
             resources::city::{dto, routes::init_routes},
             tests::utils::get_app,
-            utils::response::ApiResponse,
+            utils::{response::ApiResponse, random_number},
         },
         domain::city::{model::CityCreateModel, repository::CityRepository},
     };
@@ -70,7 +70,7 @@ mod tests {
 
         //Seed
         let city_model = CityCreateModel::mock_default();
-        repositories
+        let city = repositories
             .city_repository
             .insert(&city_model.clone())
             .await
@@ -79,7 +79,7 @@ mod tests {
         let mock_request_update_city =
             dto::RequestUpdateCity::mock_default().with_name("Burgers Supreme");
         let req = test::TestRequest::put()
-            .uri(&format!("/city/{}", city_model.cityid))
+            .uri(&format!("/city/{}", city.cityid))
             .set_json(mock_request_update_city.clone())
             .to_request();
         let res = test::call_service(&app, req).await;
@@ -101,7 +101,7 @@ mod tests {
         let (_, app) = get_app(init_routes).await;
 
         let req = test::TestRequest::put()
-            .uri(&format!("/city/{}", Uuid::new_v4()))
+            .uri(&format!("/city/{}", random_number().to_string()))
             .set_json(dto::RequestUpdateCity::mock_default().with_name("weapons update 3"))
             .to_request();
         let res = test::call_service(&app, req).await;

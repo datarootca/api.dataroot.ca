@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use uuid::Uuid;
+
 
 use crate::domain::error::DomainError;
 
@@ -13,15 +13,15 @@ pub trait ArticleRepository: Send + Sync {
         page: &u32,
         page_size: &u32,
     ) -> Result<Option<(Vec<ArticleModel>, u32)>, DomainError>;
-    async fn find_by_articleid(&self, id: &Uuid) -> Result<Option<ArticleModel>, DomainError>;
+    async fn find_by_articleid(&self, id: &i32) -> Result<Option<ArticleModel>, DomainError>;
     async fn insert(
         &self,
         article_create_model: &ArticleCreateModel,
     ) -> Result<ArticleModel, DomainError>;
     async fn update_by_articleid(
         &self,
-        id: &Uuid,
+        id: &i32,
         article_update_model: &ArticleUpdateModel,
     ) -> Result<ArticleModel, DomainError>;
-    async fn delete_by_articleid(&self, id: &Uuid) -> Result<(), DomainError>;
+    async fn delete_by_articleid(&self, id: &i32) -> Result<(), DomainError>;
 }
