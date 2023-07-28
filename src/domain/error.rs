@@ -54,3 +54,9 @@ impl From<lapin::Error> for DomainError {
         DomainError::InternalServerError(value.to_string())
     }
 }
+
+impl From<serde_json::Error> for DomainError {
+    fn from(value: serde_json::Error) -> Self {
+        DomainError::InternalServerError(value.to_string())
+    }
+}

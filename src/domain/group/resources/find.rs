@@ -1,17 +1,18 @@
 use std::sync::Arc;
 
 use crate::domain::{
-    group::{model::GroupModel, repository::GroupRepository},
+    group::{model::{GroupPageModel},repository::GroupRepository},
     error::DomainError,
 };
 
 pub async fn execute(
     group_repository: Arc<dyn GroupRepository>,
     name: Option<String>,
+    city: Option<String>,
     page: u32,
     page_size: u32,
-) -> Result<Option<(Vec<GroupModel>, u32)>, DomainError> {
-    let group = group_repository.find(&name, &page, &page_size).await?;
+) -> Result<Option<(Vec<GroupPageModel>, u32)>, DomainError> {
+    let group = group_repository.find(&name, &city,&page, &page_size).await?;
 
     if group.is_some() {
         return Ok(group);
@@ -28,15 +29,16 @@ mod tests {
     use mockall::mock;
     
 
-    use crate::domain::group::model::{GroupCreateModel, GroupUpdateModel};
+    use crate::domain::group::model::{GroupCreateModel, GroupUpdateModel, GroupModel};
 
     mock! {
         pub FakeGroupRepository { }
 
         #[async_trait]
         impl GroupRepository for FakeGroupRepository {
-            async fn find(&self,name: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<GroupModel>, u32)>, DomainError>;
+            async fn find(&self,name: &Option<String>,city: &Option<String>,page: &u32,page_size: &u32) -> Result<Option<(Vec<GroupPageModel>, u32)>, DomainError>;
             async fn find_by_groupid(&self, id: &i32) -> Result<Option<GroupModel>, DomainError>;
+            async fn find_by_slug(&self, slug: String) -> Result<Option<GroupModel>, DomainError>;
             async fn insert(&self,group_create_model: &GroupCreateModel) -> Result<GroupModel, DomainError>;
             async fn update_by_groupid(&self,id: &i32,group_update_model: &GroupUpdateModel) -> Result<GroupModel, DomainError>;
             async fn delete_by_groupid(&self, id: &i32) -> Result<(), DomainError>;
@@ -49,9 +51,9 @@ mod tests {
 
         group_repository
             .expect_find()
-            .return_once(|_, _, _| Ok(Some((vec![GroupModel::mock_default()], 1))));
+            .return_once(|_, _, _,_| Ok(Some((vec![GroupPageModel::mock_default()], 1))));
 
-        let (group, count) = execute(Arc::new(group_repository), None, 1, 12)
+        let (group, count) = execute(Arc::new(group_repository), None,None, 1, 12)
             .await
             .unwrap()
             .unwrap();
@@ -65,9 +67,9 @@ mod tests {
         let mut group_repository = MockFakeGroupRepository::new();
         group_repository
             .expect_find()
-            .return_once(|_, _, _| Ok(None));
+            .return_once(|_, _, _,_| Ok(None));
 
-        let response = execute(Arc::new(group_repository), None, 1, 12)
+        let response = execute(Arc::new(group_repository), None,None, 1, 12)
             .await
             .unwrap();
 

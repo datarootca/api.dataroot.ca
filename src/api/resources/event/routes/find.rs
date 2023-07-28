@@ -4,16 +4,16 @@ use actix_web::{
     HttpResponse,
 };
 
-use validator::Validate;
+use validator::{Validate};
 
 use crate::{
     api::{
         config,
         lib::AppState,
-        resources::event::dto::{self, ResponseEvent},
+        resources::event::dto::{self, ResponseDetailEvent},
         utils::response::ApiResponse,
     },
-    domain::{event, error::DomainError},
+    domain::{event, error::DomainError}
 };
 
 #[utoipa::path(
@@ -43,17 +43,38 @@ async fn handler(
         .unwrap_or(config::get_config().page_size_default);
 
     let name = query.name.to_owned();
+    let in_person = query.in_person.to_owned();
+    let is_online = query.is_online.to_owned();
+    let location = query.location.to_owned();
+    let group_slug = query.group_slug.to_owned();
+    let has_fee = query.has_fee.to_owned();
+    let rsvp_limit = query.rsvp_limit.to_owned();
+    let status = query.status.to_owned();
+    
+    let time_frame = query.time_frame.to_owned();
+    let start_date = query.start_date.to_owned();
+    let end_date = query.end_date.to_owned();
 
     let result = event::resources::find::execute(
         state.event_repository.clone(),
         name,
+        in_person,
+        is_online,
+        group_slug,
+        location,
+        has_fee,
+        rsvp_limit,
+        status,
+        time_frame,
+        start_date,
+        end_date,
         page,
         page_size,
     )
     .await?;
 
     if let Some((state, count)) = result {
-        let response = ApiResponse::<ResponseEvent>::new(
+        let response = ApiResponse::<ResponseDetailEvent>::new(
             state.into_iter().map(|i| i.into()).collect(),
             Some(page),
             Some(count),
@@ -75,7 +96,7 @@ mod tests {
             tests::utils::get_app,
             utils::response::ApiResponse,
         },
-        domain::event::{model::EventCreateModel, repository::EventRepository},
+        domain::{event::{model::EventCreateModel, repository::EventRepository}},
     };
 
     #[actix_web::test]
@@ -96,7 +117,7 @@ mod tests {
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_event_finded: ApiResponse<dto::ResponseEvent> =
+        let response_event_finded: ApiResponse<dto::ResponseDetailEvent> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
         assert!(!response_event_finded.records.is_empty());
@@ -124,7 +145,7 @@ mod tests {
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_event_finded: ApiResponse<dto::ResponseEvent> =
+        let response_event_finded: ApiResponse<dto::ResponseDetailEvent> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
         assert!(!response_event_finded.records.is_empty());

@@ -3,16 +3,16 @@ use std::sync::Arc;
 
 
 use crate::domain::{
-    city::{model::CityModel, repository::CityRepository},
+    city::{model::{CityDetailModel}, repository::CityRepository},
     error::DomainError,
 };
 
 pub async fn execute(
     city_repository: Arc<dyn CityRepository>,
-    id: i32,
-) -> Result<Option<CityModel>, DomainError> {
-    if let Some(category) = city_repository.find_by_cityid(&id).await? {
-        return Ok(Some(category));
+    slug: String,
+) -> Result<Option<CityDetailModel>, DomainError> {
+    if let Some(city) = city_repository.find_by_slug(slug.to_owned()).await? {
+        return Ok(Some(city));
     }
 
     Ok(None)
@@ -22,7 +22,7 @@ mod tests {
     use async_trait::async_trait;
     use mockall::mock;
 
-    use crate::{domain::city::model::{CityCreateModel, CityUpdateModel,CityDetailModel}, api::utils::random_number};
+    use crate::{domain::city::model::{CityCreateModel, CityUpdateModel,CityDetailModel,CityModel}, api::utils::{random_string}};
 
     use super::*;
 
@@ -45,10 +45,10 @@ mod tests {
         let mut city_repository = MockFakeCityRepository::new();
 
         city_repository
-            .expect_find_by_cityid()
-            .return_once(|_| Ok(Some(CityModel::mock_default())));
+            .expect_find_by_slug()
+            .return_once(|_| Ok(Some(CityDetailModel::mock_default())));
 
-        let result = execute(Arc::new(city_repository), random_number()).await;
+        let result = execute(Arc::new(city_repository), random_string(10)).await;
 
         match result {
             Ok(_) => {}
@@ -61,10 +61,10 @@ mod tests {
         let mut city_repository = MockFakeCityRepository::new();
 
         city_repository
-            .expect_find_by_cityid()
+            .expect_find_by_slug()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(city_repository), random_number()).await;
+        let result = execute(Arc::new(city_repository), random_string(10)).await;
 
         match result {
             Ok(result) => {

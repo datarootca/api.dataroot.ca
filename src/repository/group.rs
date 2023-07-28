@@ -7,32 +7,32 @@ use tokio_postgres::{types::ToSql, Row};
 
 use crate::domain::{
     group::{
-        model::{GroupCreateModel, GroupModel, GroupUpdateModel},
+        model::{GroupCreateModel, GroupModel, GroupUpdateModel, GroupPageModel},
         repository::GroupRepository,
     },
     error::DomainError,
 };
 
 const QUERY_FIND_GROUP: &str = "
-    select
-        groupid,
-        name,
-        description,
-        extid,
-        slug,
-        private,
-        members,
-        cityid,
-        organizer,
-        created_at,
-        updated_at,
-        highres_link,
-        photo_link,
-        thumb_link,
-        active,
+    SELECT
+        g.name AS group_name,
+        g.members,
+        g.slug as group_slug,
+        g.photo_link as group_photo_link,
+        g.thumb_link as group_thumb_link,
+        g.highres_link as group_highres_link,
+        g.organizer,
+        g.groupid,
+        c.slug AS city_slug,
+        c.name AS city_name,
+        s.symbol AS state_symbol,
+        COUNT(case when e.time >= NOW() then 1 else null end) AS event_count,
         count(1) over ()::OID as count
-    from
-        \"group\"";
+    FROM
+        \"group\" g
+    LEFT JOIN city c USING (cityid)
+    LEFT JOIN state s USING (stateid)
+    LEFT JOIN \"event\" e ON g.groupid = e.groupid";
 
 const QUERY_FIND_GROUP_BY_ID: &str = "
     select
@@ -56,6 +56,29 @@ const QUERY_FIND_GROUP_BY_ID: &str = "
         \"group\"
     where 
         groupid = $1;";
+
+const QUERY_FIND_GROUP_BY_SLUG: &str = "
+select
+        groupid,
+        name,
+        description,
+        extid,
+        slug,
+        private,
+        members,
+        cityid,
+        organizer,
+        created_at,
+        updated_at,
+        highres_link,
+        photo_link,
+        thumb_link,
+        active,
+        count(1) over ()::OID as count
+    from
+        \"group\"
+    WHERE 
+        \"group\".slug =  $1;";
 
 const QUERY_INSERT_GROUP: &str = "
     insert into \"group\"(name,description,extid,slug,private,members,cityid,organizer,highres_link,photo_link,thumb_link,active)
@@ -133,9 +156,10 @@ impl GroupRepository for PgGroupRepository {
     async fn find(
         &self,
         name: &Option<String>,
+        city: &Option<String>,
         page: &u32,
         page_size: &u32,
-    ) -> Result<Option<(Vec<GroupModel>, u32)>, DomainError> {
+    ) -> Result<Option<(Vec<GroupPageModel>, u32)>, DomainError> {
         let client = self.pool.get().await?;
 
         let mut queries: Vec<String> = vec![];
@@ -143,17 +167,25 @@ impl GroupRepository for PgGroupRepository {
 
         if let Some(name) = name {
             queries.push(format!(
-                "\"group\".name like '%' || ${} || '%'",
+                "\"g\".name like '%' || ${} || '%'",
                 params.len() + 1
             ));
             params.push(name);
         }
-
+        
+        if let Some(city) = city {
+            queries.push(format!(
+                "\"c\".slug like '%' || ${} || '%'",
+                params.len() + 1
+            ));
+            params.push(city);
+        }
         let mut query = String::from(QUERY_FIND_GROUP);
         if !queries.is_empty() {
             query = format!("{} where {}", query, queries.join(" and "));
         }
 
+        query = format!("{query} GROUP BY g.name,g.members,g.slug,g.photo_link,g.thumb_link,g.highres_link,g.organizer,g.groupid,c.slug,c.name,s.symbol");
         let offset = page_size * (page - 1);
         query = format!("{query} limit {page_size} offset {offset}");
 
@@ -163,7 +195,7 @@ impl GroupRepository for PgGroupRepository {
         if !result.is_empty() {
             let count: u32 = result.first().unwrap().get("count");
 
-            let groups: Vec<GroupModel> = result.iter().map(|row| row.into()).collect();
+            let groups: Vec<GroupPageModel> = result.iter().map(|row| row.into()).collect();
 
             return Ok(Some((groups, count)));
         }
@@ -176,6 +208,17 @@ impl GroupRepository for PgGroupRepository {
         let stmt = client.prepare(QUERY_FIND_GROUP_BY_ID).await?;
 
         if let Some(result) = client.query_opt(&stmt, &[id]).await? {
+            return Ok(Some((&result).into()));
+        }
+
+        return Ok(None);
+    }
+
+    async fn find_by_slug(&self, slug: String) -> Result<Option<GroupModel>, DomainError> {
+        let client = self.pool.get().await?;
+        let stmt = client.prepare(QUERY_FIND_GROUP_BY_SLUG).await?;
+
+        if let Some(result) = client.query_opt(&stmt, &[&slug]).await? {
             return Ok(Some((&result).into()));
         }
 
@@ -268,6 +311,25 @@ impl From<&Row> for GroupModel {
             highres_link:   row.get("highres_link"),
             photo_link: row.get("photo_link"),
             thumb_link: row.get("thumb_link"),
+        }
+    }
+}
+
+
+impl From<&Row> for GroupPageModel {
+    fn from(row: &Row) -> Self {
+        Self {
+            group_name: row.get("group_name"),
+            city_name: row.get("city_name"),
+            state_symbol: row.get("state_symbol"),
+            city_slug: row.get("city_slug"),
+            organizer: row.get("organizer"),
+            event_count: row.get("event_count"),
+            members: row.get("members"),
+            group_slug: row.get("group_slug"),
+            group_highres_link: row.get("group_highres_link"),
+            group_photo_link: row.get("group_photo_link"),
+            group_thumb_link: row.get("group_thumb_link"),
         }
     }
 }

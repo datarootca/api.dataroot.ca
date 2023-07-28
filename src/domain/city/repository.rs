@@ -3,7 +3,7 @@ use async_trait::async_trait;
 
 use crate::domain::error::DomainError;
 
-use super::model::{CityCreateModel, CityModel, CityUpdateModel};
+use super::model::{CityCreateModel, CityModel, CityUpdateModel, CityDetailModel};
 
 #[async_trait]
 pub trait CityRepository: Send + Sync {
@@ -14,6 +14,7 @@ pub trait CityRepository: Send + Sync {
         page_size: &u32,
     ) -> Result<Option<(Vec<CityModel>, u32)>, DomainError>;
     async fn find_by_cityid(&self, id: &i32) -> Result<Option<CityModel>, DomainError>;
+    async fn find_by_slug(&self, slug: String) -> Result<Option<CityDetailModel>, DomainError>;
     async fn insert(
         &self,
         city_create_model: &CityCreateModel,

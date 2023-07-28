@@ -10,7 +10,7 @@ use crate::{
     api::{
         config,
         lib::AppState,
-        resources::group::dto::{self, ResponseGroup},
+        resources::group::dto::{self, ResponsePageGroup},
         utils::response::ApiResponse,
     },
     domain::{group, error::DomainError},
@@ -43,17 +43,19 @@ async fn handler(
         .unwrap_or(config::get_config().page_size_default);
 
     let name = query.name.to_owned();
+    let city = query.city.to_owned();
 
     let result = group::resources::find::execute(
         state.group_repository.clone(),
         name,
+        city,
         page,
         page_size,
     )
     .await?;
 
     if let Some((state, count)) = result {
-        let response = ApiResponse::<ResponseGroup>::new(
+        let response = ApiResponse::<ResponsePageGroup>::new(
             state.into_iter().map(|i| i.into()).collect(),
             Some(page),
             Some(count),
@@ -96,7 +98,7 @@ mod tests {
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_group_finded: ApiResponse<dto::ResponseGroup> =
+        let response_group_finded: ApiResponse<dto::ResponsePageGroup> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
         assert!(!response_group_finded.records.is_empty());
@@ -124,7 +126,7 @@ mod tests {
         assert!(res.status().is_success());
 
         let body = test::read_body(res).await;
-        let response_group_finded: ApiResponse<dto::ResponseGroup> =
+        let response_group_finded: ApiResponse<dto::ResponsePageGroup> =
             serde_json::from_str(&String::from_utf8(body.to_vec()).unwrap()).unwrap();
 
         assert!(!response_group_finded.records.is_empty());

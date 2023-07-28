@@ -58,7 +58,7 @@ pub async fn run(pg_pool: Arc<Pool>, redis_client: Arc<Client>) -> Result<(), Bo
         )),
         category_repository: Arc::new(PgCategoryRepository::new(pg_pool.clone())),
         state_repository: Arc::new(PgStateRepository::new(pg_pool.clone())),
-        city_repository: Arc::new(PgCityRepository::new(pg_pool.clone())),
+        city_repository: Arc::new(PgCityRepository::new(pg_pool.clone(),redis_client.clone())),
         article_repository: Arc::new(PgArticleRepository::new(pg_pool.clone())),
         group_repository: Arc::new(PgGroupRepository::new(pg_pool.clone())),
         event_repository: Arc::new(PgEventRepository::new(pg_pool.clone())),

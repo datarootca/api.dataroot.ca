@@ -2,6 +2,8 @@
 use crate::api::utils::random_number;
 #[cfg(test)]
 use crate::api::utils::random_string;
+use crate::domain::city::model::CityModel;
+use crate::domain::state::model::StateModel;
 
 use chrono::{DateTime, Utc};
 #[derive(Debug, Clone)]
@@ -134,6 +136,53 @@ impl GroupUpdateModel {
             highres_link: Some("".to_string()),
             photo_link: Some("".to_string()),
             thumb_link: Some("".to_string()),
+        }
+    }
+}
+
+pub struct DetailedGroup {
+    pub group: GroupModel,
+    pub city: CityModel,
+    pub state: StateModel,
+}
+
+impl DetailedGroup {
+    pub fn new(group: GroupModel, city: CityModel, state: StateModel) -> Self {
+        Self { group, city, state }
+    }
+}
+
+
+#[derive(Debug, Clone)]
+pub struct GroupPageModel {
+    pub group_name: String,
+    pub group_slug: String,
+    pub group_highres_link: Option<String>,
+    pub group_photo_link: Option<String>,
+    pub group_thumb_link: Option<String>,
+    pub state_symbol: Option<String>,
+    pub city_name: Option<String>,
+    pub city_slug: Option<String>,
+    pub organizer: String,
+    pub event_count: i64,
+    pub members: i32,
+}
+
+#[cfg(test)]
+impl GroupPageModel {
+    pub fn mock_default() -> Self {
+        Self {
+            group_name: random_string(10),
+            city_name: Some("The Big Group".to_string()),
+            state_symbol: Some(random_string(10)),
+            city_slug: Some(random_string(10)),
+            organizer: "organizer"  .to_string(),
+            event_count: 100,
+            members: random_number(),
+            group_slug: random_string(10),
+            group_highres_link: Some("group_highres_link".to_string()),
+            group_photo_link: Some("group_photo_link".to_string()),
+            group_thumb_link: Some("group_thumb_link".to_string()),
         }
     }
 }

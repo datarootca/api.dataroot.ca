@@ -1,4 +1,6 @@
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
+use serde::Serialize;
 
 #[cfg(test)]
 use crate::api::utils::random_number;
@@ -121,6 +123,31 @@ impl CityModel {
             thumb_link: Some("".to_string()),
             created_at: DateTime::default(),
             updated_at: Some(DateTime::default()),
+        }
+    }
+}
+
+#[derive(Debug, Clone,Serialize,Deserialize)]
+pub struct CityDetailModel {
+    pub name: String,
+    pub slug: String,
+    pub state_symbol: String,
+    pub state_name: String,
+    pub highres_link: Option<String>,
+    pub photo_link: Option<String>,
+    pub thumb_link: Option<String>,
+}
+#[cfg(test)]
+impl CityDetailModel {
+    pub fn mock_default() -> Self {
+        Self {
+            name: random_string(10),
+            slug: random_string(10),
+            state_symbol: random_string(2),
+            state_name: random_string(4),
+            highres_link: Some("".to_string()),
+            photo_link: Some("".to_string()),
+            thumb_link: Some("".to_string()),
         }
     }
 }

@@ -123,7 +123,7 @@ where
     let health_repository = Arc::new(PgHealthRepository::new(pool.clone(), redis_client.clone()));
     let category_repository = Arc::new(PgCategoryRepository::new(pool.clone()));
     let state_repository = Arc::new(PgStateRepository::new(pool.clone()));
-    let city_repository = Arc::new(PgCityRepository::new(pool.clone()));
+    let city_repository = Arc::new(PgCityRepository::new(pool.clone(),redis_client.clone()));
     let article_repository = Arc::new(PgArticleRepository::new(pool.clone()));
     let group_repository = Arc::new(PgGroupRepository::new(pool.clone()));
     let event_repository = Arc::new(PgEventRepository::new(pool.clone()));

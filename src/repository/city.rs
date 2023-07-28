@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
+use redis::Client;
 use async_trait::async_trait;
 use deadpool_postgres::Pool;
+use redis::AsyncCommands;
 
 use tokio_postgres::{types::ToSql, Row};
 
 use crate::domain::{
     city::{
-        model::{CityCreateModel, CityModel, CityUpdateModel},
+        model::{CityCreateModel, CityModel, CityUpdateModel, CityDetailModel},
         repository::CityRepository,
     },
     error::DomainError,
@@ -47,6 +49,21 @@ const QUERY_FIND_CITY_BY_ID: &str = "
     where 
         cityid = $1;";
 
+const QUERY_FIND_CITY_BY_SLUG: &str = "
+        select
+            s.name as state_name,
+            s.symbol as state_symbol,
+            c.name,
+            c.slug,
+            c.highres_link,
+            c.photo_link,
+            c.thumb_link
+        from
+            city c
+        JOIN state s using(stateid)
+        where 
+            slug = $1;";
+            
 const QUERY_INSERT_CITY: &str = "
     insert into city(stateid,name,slug,extid,highres_link,photo_link,thumb_link)
     values
@@ -96,10 +113,11 @@ const QUERY_DELETE_CITY_BY_ID: &str = "
 
 pub struct PgCityRepository {
     pool: Arc<Pool>,
+    redis_client: Arc<Client>,
 }
 impl PgCityRepository {
-    pub fn new(pool: Arc<Pool>) -> Self {
-        Self { pool }
+    pub fn new(pool: Arc<Pool>,redis_client: Arc<Client>) -> Self {
+        Self { pool,redis_client }
     }
 }
 
@@ -155,6 +173,29 @@ impl CityRepository for PgCityRepository {
         }
 
         return Ok(None);
+    }
+
+    async fn find_by_slug(&self, slug: String) -> Result<Option<CityDetailModel>, DomainError> {
+        let mut conn = self.redis_client.get_async_connection().await?;
+        let city: Option<String> = conn.get(&slug).await?;
+
+        if let Some(serialized_city) = city {
+            let city_detail: CityDetailModel = serde_json::from_str(&serialized_city).map_err(DomainError::from)?;
+            return Ok(Some(city_detail));
+        }
+        
+        let client = self.pool.get().await?;
+        let stmt = client.prepare(QUERY_FIND_CITY_BY_SLUG).await?;
+
+        if let Some(result) = client.query_opt(&stmt, &[&slug]).await? {
+            let city_detail: CityDetailModel = (&result).into();
+
+            let _: () = conn.set_ex(slug, serde_json::to_string(&city_detail)?, 60 * 60 * 24).await.map_err(DomainError::from)?;
+
+            return Ok(Some(city_detail));
+        }
+
+        Ok(None)
     }
 
     async fn insert(
@@ -231,3 +272,18 @@ impl From<&Row> for CityModel {
         }
     }
 }
+
+impl From<&Row> for CityDetailModel {
+    fn from(row: &Row) -> Self {
+        Self {
+            name: row.get("name"),
+            slug: row.get("slug"),
+            state_name: row.get("state_name"),
+            state_symbol: row.get("state_symbol"),
+            highres_link: row.get("highres_link"),
+            photo_link: row.get("photo_link"),
+            thumb_link: row.get("thumb_link"),
+        }
+    }
+}
+

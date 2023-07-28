@@ -12,7 +12,7 @@ use crate::api::utils::{
 
 use crate::{
     api::utils::{validator::validate_page_size_max},
-    domain::city::model::{CityCreateModel, CityModel, CityUpdateModel},
+    domain::city::model::{CityCreateModel, CityModel, CityUpdateModel, CityDetailModel},
 };
 
 #[cfg_attr(test, derive(Serialize))]
@@ -149,3 +149,32 @@ impl From<CityModel> for ResponseCity {
         }
     }
 }
+
+#[cfg_attr(test, derive(Deserialize))]
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ResponseDetailCity {
+    pub name: String,
+    pub slug: String,
+    pub state_symbol: String,
+    pub state_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub highres_link: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub photo_link: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thumb_link: Option<String>,
+}
+impl From<CityDetailModel> for ResponseDetailCity {
+    fn from(value: CityDetailModel) -> Self {
+        Self {
+            name: value.name,
+            slug: value.slug,
+            state_name: value.state_name,
+            state_symbol: value.state_symbol,
+            highres_link: value.highres_link,
+            thumb_link: value.thumb_link,
+            photo_link: value.photo_link,
+        }
+    }
+}
+

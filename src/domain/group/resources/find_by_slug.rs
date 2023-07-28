@@ -1,29 +1,26 @@
 use std::sync::Arc;
 
-use crate::domain::{group::repository::GroupRepository, error::DomainError};
+use crate::domain::{
+    group::{model::GroupModel, repository::GroupRepository},
+    error::DomainError,
+};
 
 pub async fn execute(
     group_repository: Arc<dyn GroupRepository>,
-    group_id: i32,
-) -> Result<(), DomainError> {
-    let has_group = group_repository.find_by_groupid(&group_id).await?;
-    if has_group.is_none() {
-        return Err(DomainError::NotFound(String::from("Group id not found")));
+    slug: String,
+) -> Result<Option<GroupModel>, DomainError> {
+    if let Some(group) = group_repository.find_by_slug(slug.clone()).await? {
+        return Ok(Some(group));
     }
 
-    group_repository.delete_by_groupid(&group_id).await?;
-
-    Ok(())
+    Ok(None)
 }
-
 #[cfg(test)]
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
 
-    use crate::{domain::group::model::{
-        GroupCreateModel, GroupModel, GroupUpdateModel, GroupPageModel,
-    }, api::utils::random_number};
+    use crate::{domain::group::model::{GroupCreateModel, GroupUpdateModel, GroupPageModel}, api::utils::random_string};
 
     use super::*;
 
@@ -42,38 +39,36 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn it_should_return_void_group_deleted() {
+    async fn it_should_return_group_finded() {
         let mut group_repository = MockFakeGroupRepository::new();
 
         group_repository
-            .expect_find_by_groupid()
+            .expect_find_by_slug()
             .return_once(|_| Ok(Some(GroupModel::mock_default())));
 
-        group_repository
-            .expect_delete_by_groupid()
-            .return_once(|_| Ok(()));
-
-        let result = execute(Arc::new(group_repository), random_number()).await;
+        let result = execute(Arc::new(group_repository), random_string(5)).await;
 
         match result {
-            Ok(()) => {}
+            Ok(_) => {}
             Err(err) => unreachable!("{err}"),
         }
     }
 
     #[tokio::test]
-    async fn it_should_return_error_group_not_found() {
+    async fn it_should_return_error_no_content_group() {
         let mut group_repository = MockFakeGroupRepository::new();
 
         group_repository
-            .expect_find_by_groupid()
+            .expect_find_by_slug()
             .return_once(|_| Ok(None));
 
-        let result = execute(Arc::new(group_repository), random_number()).await;
+        let result = execute(Arc::new(group_repository), random_string(5)).await;
 
         match result {
-            Err(DomainError::NotFound(_)) => {}
-            _ => unreachable!(),
+            Ok(result) => {
+                assert!(result.is_none())
+            }
+            Err(err) => unreachable!("{err}"),
         }
     }
 }

@@ -224,3 +224,54 @@ impl EventModel {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct EventDetailModel {
+    pub eventid: i32,
+    pub name: String,
+    pub description: String,
+    pub location: String,
+    pub group_name: Option<String>,
+    pub group_slug: Option<String>,
+    pub in_person: bool,
+    pub is_online: bool,
+    pub time: DateTime<Utc>,
+    pub duration: i32,
+    pub link: String,
+    pub waitlist_count: i32,
+    pub fee: bool,
+    pub yes_rsvp_count: i32,
+    pub rsvp_limit: i32,
+    pub highres_link: Option<String>,
+    pub photo_link: Option<String>,
+    pub thumb_link: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
+}
+#[cfg(test)]
+impl EventDetailModel {
+    pub fn mock_default() -> Self {
+        Self {
+            eventid: random_number(),
+            group_name: Some(random_string(5)),
+            group_slug: Some(random_string(5)),
+            name: "Event".to_string(),
+            description: "The Big Event".to_string(),
+            location: "boulvar".to_string(),
+            in_person: true,
+            is_online: true,
+            time: DateTime::default(),
+            duration: 5,
+            link: random_string(10),
+            waitlist_count: 5,
+            fee: false,
+            yes_rsvp_count: 5,
+            rsvp_limit: 5,
+            highres_link: Some("".to_string()),
+            photo_link: Some("".to_string()),
+            thumb_link: Some("".to_string()),
+            created_at: DateTime::default(),
+            updated_at: Some(DateTime::default()),
+        }
+    }
+}

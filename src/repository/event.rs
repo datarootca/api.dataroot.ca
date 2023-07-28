@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use deadpool_postgres::Pool;
 
+use serde::{Serialize, Deserialize};
 use tokio_postgres::{types::ToSql, Row};
 
 use crate::domain::{
     event::{
-        model::{EventCreateModel, EventModel, EventUpdateModel},
+        model::{EventCreateModel, EventModel, EventUpdateModel, EventDetailModel},
         repository::EventRepository,
     },
     error::DomainError,
@@ -18,6 +20,8 @@ const QUERY_FIND_EVENT: &str = "
         e.eventid,
         e.name,
         e.description,
+        g.slug as group_slug,
+        g.name as group_name,
         e.extid,
         e.location,
         e.groupid,
@@ -37,7 +41,8 @@ const QUERY_FIND_EVENT: &str = "
         e.rsvp_limit,
         count(1) over ()::OID as count
     from
-        event e";
+        event e
+    LEFT JOIN \"group\" g using(groupid)";
 
 const QUERY_FIND_EVENT_BY_ID: &str = "
     select
@@ -152,15 +157,39 @@ impl PgEventRepository {
         Self { pool }
     }
 }
+#[derive(Debug, Serialize, Deserialize,Clone)]
+pub enum EventStatusOption {
+    Upcomming,
+    Recurrent,
+    Past,
+}
+
+#[derive(Debug, Serialize, Deserialize,Clone)]
+pub enum DateRangeOption {
+    Today,
+    ThisWeek,
+    ThisMonth,
+    Custom,
+}
 
 #[async_trait]
 impl EventRepository for PgEventRepository {
     async fn find(
         &self,
         name: &Option<String>,
+        in_person: &Option<bool>,
+        is_online: &Option<bool>,
+        group_slug: &Option<String>,
+        location: &Option<String>,
+        has_fee: &Option<bool>,
+        rsvp_limit: &Option<u32>,
+        status: &Option<EventStatusOption>,
+        time_frame: &Option<DateRangeOption>,
+        start_date: &Option<DateTime<Utc>>,
+        end_date: &Option<DateTime<Utc>>,
         page: &u32,
         page_size: &u32,
-    ) -> Result<Option<(Vec<EventModel>, u32)>, DomainError> {
+    ) -> Result<Option<(Vec<EventDetailModel>, u32)>, DomainError> {
         let client = self.pool.get().await?;
 
         let mut queries: Vec<String> = vec![];
@@ -172,6 +201,88 @@ impl EventRepository for PgEventRepository {
                 params.len() + 1
             ));
             params.push(name);
+        }
+
+        if let Some(in_person) = in_person {
+            queries.push(format!(
+                "e.in_person = ${}",
+                params.len() + 1
+            ));
+            params.push(in_person);
+        }
+
+        if let Some(is_online) = is_online {
+            queries.push(format!(
+                "e.is_online = ${}",
+                params.len() + 1
+            ));
+            params.push(is_online);
+        }
+
+        if let Some(group_slug) = group_slug {
+            queries.push(format!(
+                "EXISTS(SELECT 1 FROM \"group\" g WHERE e.groupid=\"g\".groupid and \"g\".slug = ${})",
+                params.len() + 1
+            ));
+            params.push(group_slug);
+        }
+
+        if let Some(location) = location {
+            queries.push(format!(
+                "e.location = ${}",
+                params.len() + 1
+            ));
+            params.push(location);
+        }
+
+        if let Some(has_fee) = has_fee {
+            queries.push(format!(
+                "e.fee = ${}",
+                params.len() + 1
+            ));
+            params.push(has_fee);
+        }
+
+        if let Some(rsvp_limit) = rsvp_limit {
+            queries.push(format!(
+                "e.rsvp_limit = ${}",
+                params.len() + 1
+            ));
+            params.push(rsvp_limit);
+        }
+
+        if let Some(status) = status {
+            let status_query = match status {
+                EventStatusOption::Upcomming => "e.time > NOW()",
+                EventStatusOption::Past => "(e.time + INTERVAL '1 second' * e.duration) <= NOW()",
+                EventStatusOption::Recurrent => "(e.time <= NOW() AND (e.time + INTERVAL '1 second' * e.duration) > NOW())",
+            };
+            queries.push(status_query.to_string());
+        }
+
+        if let Some(time_frame) = time_frame {
+            let time_frame_query = match time_frame {
+                DateRangeOption::Today => "e.time >= CURRENT_DATE AND e.time < CURRENT_DATE + INTERVAL '1 day'".to_string(),
+                DateRangeOption::ThisWeek => "e.time >= DATE_TRUNC('week', CURRENT_DATE) AND e.time < DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week'".to_string(),
+                DateRangeOption::ThisMonth => "e.time >= DATE_TRUNC('month', CURRENT_DATE) AND e.time < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'".to_string(),
+                DateRangeOption::Custom => {
+                    let query_str = format!(
+                        "e.time >= ${} AND e.time <= ${}",
+                        params.len() + 1,
+                        params.len() + 2
+                    );
+                    if let Some(start_date) = start_date {
+                        params.push(start_date);
+                    }
+                    if let Some(end_date) = end_date {
+                        params.push(end_date);
+                    }
+                    query_str
+                },
+            };
+            if !time_frame_query.is_empty() {
+                queries.push(time_frame_query);
+            }
         }
 
         let mut query = String::from(QUERY_FIND_EVENT);
@@ -188,7 +299,7 @@ impl EventRepository for PgEventRepository {
         if !result.is_empty() {
             let count: u32 = result.first().unwrap().get("count");
 
-            let events: Vec<EventModel> = result.iter().map(|row| row.into()).collect();
+            let events: Vec<EventDetailModel> = result.iter().map(|row| row.into()).collect();
 
             return Ok(Some((events, count)));
         }
@@ -294,6 +405,35 @@ impl From<&Row> for EventModel {
             extid: row.get("extid"),
             location: row.get("location"),
             groupid: row.get("groupid"),
+            in_person: row.get("in_person"),
+            time: row.get("time"),
+            duration: row.get("duration"),
+            link: row.get("link"),
+            waitlist_count: row.get("waitlist_count"),
+            is_online: row.get("is_online"),
+            yes_rsvp_count: row.get("yes_rsvp_count"),
+            fee: row.get("fee"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            highres_link: row.get("highres_link"),
+            photo_link: row.get("photo_link"),
+            thumb_link: row.get("thumb_link"),
+            rsvp_limit: row.get("rsvp_limit"),
+            
+        }
+    }
+}
+
+
+impl From<&Row> for EventDetailModel {
+    fn from(row: &Row) -> Self {
+        Self {
+            eventid: row.get("eventid"),
+            name: row.get("name"),
+            description: row.get("description"),
+            location: row.get("location"),
+            group_name: row.get("group_name"),
+            group_slug: row.get("group_slug"),
             in_person: row.get("in_person"),
             time: row.get("time"),
             duration: row.get("duration"),
