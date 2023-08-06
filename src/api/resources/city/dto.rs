@@ -4,107 +4,12 @@ use utoipa::{IntoParams, ToSchema};
 
 use validator::Validate;
 
-#[cfg(test)]
-use crate::api::utils::{
-    random_string,
-    random_number,
-};
 
 use crate::{
     api::utils::{validator::validate_page_size_max},
-    domain::city::model::{CityCreateModel, CityModel, CityUpdateModel, CityDetailModel},
+    domain::city::model::{ CityModel, CityDetailModel},
 };
 
-#[cfg_attr(test, derive(Serialize))]
-#[derive(Debug, Deserialize, Validate, ToSchema, Clone)]
-pub struct RequestCreateCity {
-    #[validate(length(max = 64))]
-    pub name: String,
-    #[validate(length(max = 64))]
-    pub extid: String,
-    pub stateid: i32,
-    #[validate(length(max = 64))]
-    pub slug: String,
-    #[validate(length(max = 512))]
-    pub highres_link: Option<String>,
-    #[validate(length(max = 512))]
-    pub photo_link: Option<String>,
-    #[validate(length(max = 512))]
-    pub thumb_link: Option<String>,
-}
-impl From<RequestCreateCity> for CityCreateModel {
-    fn from(value: RequestCreateCity) -> Self {
-        CityCreateModel::new(
-            value.name, 
-            value.slug,
-            value.stateid,
-            value.extid,
-            value.highres_link,
-            value.photo_link,
-            value.thumb_link
-        )
-    }
-}
-#[cfg(test)]
-impl RequestCreateCity {
-    pub fn mock_default() -> Self {
-        Self {
-            name: random_string(10),
-            slug: random_string(10),
-            extid: random_string(10),
-            stateid: random_number(),
-            highres_link: Some("".to_string()),
-            photo_link: Some("".to_string()),
-            thumb_link: Some("".to_string()),
-        }
-    }
-}
-
-#[cfg_attr(test, derive(Serialize))]
-#[derive(Debug, Clone, Deserialize, Validate, ToSchema)]
-pub struct RequestUpdateCity {
-    #[validate(length(max = 64))]
-    pub name: String,
-    pub stateid: i32,
-    #[validate(length(max = 64))]
-    pub slug: String,
-    #[validate(length(max = 512))]
-    pub highres_link: Option<String>,
-    #[validate(length(max = 512))]
-    pub photo_link: Option<String>,
-    #[validate(length(max = 512))]
-    pub thumb_link: Option<String>,
-}
-impl From<RequestUpdateCity> for CityUpdateModel {
-    fn from(value: RequestUpdateCity) -> Self {
-        CityUpdateModel::new(
-            value.name, 
-            value.slug,
-            value.stateid,
-            value.highres_link,
-            value.photo_link,
-            value.thumb_link,
-        )
-    }
-}
-#[cfg(test)]
-impl RequestUpdateCity {
-    pub fn mock_default() -> Self {
-        Self {
-            name: random_string(20),
-            slug: random_string(2),
-            stateid: random_number(),
-            highres_link: Some("".to_string()),
-            photo_link: Some("".to_string()),
-            thumb_link: Some("".to_string()),
-        }
-    }
-
-    pub fn with_name(mut self, name: &str) -> Self {
-        self.name = name.to_string();
-        self
-    }
-}
 
 #[derive(Debug, Clone, Deserialize, Validate, IntoParams)]
 pub struct RequestFindCategories {

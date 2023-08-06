@@ -53,7 +53,7 @@ mod tests {
 
     use crate::{
         api::{resources::group::routes::init_routes, tests::utils::get_app, utils::random_number},
-        domain::group::{model::GroupCreateModel, repository::GroupRepository},
+        domain::group::{ repository::GroupRepository},
     };
 
     #[actix_web::test]
